@@ -30,15 +30,18 @@ function initFoldDash() {
   const SIDE_OUTSET = 28
   const RIGHT_EXTRA = 20
 
-  const snapCornerY = (yCorner, yStart, xFold, xLeft, period, dash) => {
-    const len =
-      Math.max(0, yCorner - yStart) + Math.max(0, xFold - xLeft)
-    const mod = len % period
-    const target = dash / 2
-    let delta = target - mod
+  // Угол в середине штриха; следующие сегменты — кратны period, чтобы стык не рвался.
+  const snapLen = (len, period, dash) => {
+    const mod = ((len % period) + period) % period
+    let delta = dash / 2 - mod
     if (delta > period / 2) delta -= period
     if (delta < -period / 2) delta += period
-    return yCorner + delta
+    return len + delta
+  }
+
+  const quantize = (raw, period) => {
+    const n = Math.max(1, Math.round(raw / period))
+    return n * period
   }
 
   const update = () => {
@@ -54,11 +57,14 @@ function initFoldDash() {
     const markRect = mark.getBoundingClientRect()
     const stopRect = stop.getBoundingClientRect()
     const turnRect = turn.getBoundingClientRect()
-    const retRect = ret.getBoundingClientRect()
     const container = stop.closest('.container') || stop.parentElement
     const containerRect = container.getBoundingClientRect()
     const main = document.querySelector('.site-main')
     const mainRect = main ? main.getBoundingClientRect() : containerRect
+
+    // SVG top: 100% от mark — все Y считаем от низа обёртки
+    const originY = markRect.bottom
+    const toY = (clientY) => clientY - originY
 
     const scale = imgRect.width / LOGO_W
     const dash = DASH * scale
@@ -88,57 +94,39 @@ function initFoldDash() {
     const xRight = width - pad
 
     const yStart = gap
-    let yCorner = stopRect.top + stopRect.height / 2 - imgRect.bottom
-    yCorner = snapCornerY(yCorner, yStart, xFold, xLeft, period, dash)
+    const yCornerRaw = toY(stopRect.top + stopRect.height / 2)
+    const lenToLeft = snapLen(
+      Math.max(period, yCornerRaw - yStart) + Math.max(0, xFold - xLeft),
+      period,
+      dash,
+    )
+    const yCorner = yStart + (lenToLeft - (xFold - xLeft))
 
-    let yTurn = turnRect.top + thickness - imgRect.bottom
-    const lenToTurn =
-      Math.max(0, yCorner - yStart) +
-      Math.max(0, xFold - xLeft) +
-      Math.max(0, yTurn - yCorner)
-    const modTurn = lenToTurn % period
-    let deltaTurn = dash / 2 - modTurn
-    if (deltaTurn > period / 2) deltaTurn -= period
-    if (deltaTurn < -period / 2) deltaTurn += period
-    yTurn += deltaTurn
-    yTurn = Math.max(yTurn, yCorner)
+    const yTurnRaw = toY(turnRect.top) + thickness
+    const yTurn = yCorner + quantize(Math.max(period, yTurnRaw - yCorner), period)
 
-    // правый верхний угол горизонтали — mid-dash
-    const lenToRight =
-      lenToTurn + deltaTurn + Math.max(0, xRight - xLeft)
-    const modRight = ((lenToRight % period) + period) % period
-    let deltaRight = dash / 2 - modRight
-    if (deltaRight > period / 2) deltaRight -= period
-    if (deltaRight < -period / 2) deltaRight += period
-    let xDrop = Math.min(Math.max(xRight + deltaRight, xLeft + period), width - pad)
-
-    // влево над заявкой до середины формы, затем вниз в форму
-    let yReturn = retRect.top + thickness - imgRect.bottom
-    const lenToReturn =
-      lenToRight + deltaRight + Math.max(0, yReturn - yTurn)
-    const modReturn = ((lenToReturn % period) + period) % period
-    let deltaReturn = dash / 2 - modReturn
-    if (deltaReturn > period / 2) deltaReturn -= period
-    if (deltaReturn < -period / 2) deltaReturn += period
-    yReturn += deltaReturn
-    yReturn = Math.max(yReturn, yTurn)
+    let xDrop = xLeft + quantize(Math.max(period, xRight - xLeft), period)
+    if (xDrop > xRight) xDrop -= period
+    if (xDrop < xLeft + period) xDrop = xLeft + period
 
     const form = document.querySelector('[data-lead-form]')
     const formRect = (form || ret).getBoundingClientRect()
 
-    let xMid = formRect.left + formRect.width / 2 - leftEdge
-    const lenToMid =
-      lenToReturn + deltaReturn + Math.max(0, xDrop - xMid)
-    const modMid = ((lenToMid % period) + period) % period
-    let deltaMid = dash / 2 - modMid
-    if (deltaMid > period / 2) deltaMid -= period
-    if (deltaMid < -period / 2) deltaMid += period
-    xMid = Math.min(Math.max(xMid + deltaMid, xLeft + period), xDrop - period)
+    // горизонталь чуть выше карточки формы (floor — не заезжаем в форму)
+    const yReturnRaw = toY(formRect.top) - thickness
+    const returnSeg = Math.max(
+      period,
+      Math.floor(Math.max(0, yReturnRaw - yTurn) / period) * period,
+    )
+    const yReturn = yTurn + returnSeg
 
-    // входит в верх формы и сразу заканчивается (не режет поля)
-    const enter = Math.max(period * 0.7, 18)
-    let yForm = formRect.top - imgRect.bottom + enter
-    yForm = Math.max(yForm, yReturn + enter)
+    const xMidRaw = formRect.left + formRect.width / 2 - leftEdge
+    let xMid = xDrop - quantize(Math.max(period, xDrop - xMidRaw), period)
+    if (xMid < xLeft + period) xMid = xDrop - period
+
+    // короткий вход в верх формы
+    const enter = Math.max(period, dash)
+    const yForm = Math.max(yReturn + enter, toY(formRect.top) + enter)
 
     const height = Math.max(yForm + thickness, thickness * 2)
 
@@ -155,7 +143,8 @@ function initFoldDash() {
     path.setAttribute('stroke-width', String(thickness))
     path.setAttribute('stroke-dasharray', `${dash} ${gap}`)
     path.setAttribute('stroke-dashoffset', '0')
-    path.setAttribute('stroke-linejoin', 'round')
+    path.setAttribute('stroke-linecap', 'butt')
+    path.setAttribute('stroke-linejoin', 'miter')
     path.setAttribute('shape-rendering', 'geometricPrecision')
   }
 

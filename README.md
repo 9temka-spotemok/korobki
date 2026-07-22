@@ -70,7 +70,7 @@ npm run preview
 | `[data-fold-stop]` (`.why-fold-line`) | Верхняя горизонталь (под «Почему») |
 | `[data-fold-turn]` (`.section--print`) | Поворот вправо |
 | `[data-fold-return]` (`#order`) | Горизонталь над заявкой; короткий спуск в центр формы и конец |
-| `initFoldDash()` в `main.js` | Координаты path при resize / load |
+| `initFoldDash()` в `main.js` | Координаты path; углы на середине штриха, сегменты кратны `dash+gap` |
 
 Чтобы подключить файлы Tablon Black / Bebas Neue локально (если есть woff2 с кириллицей), положите их в `public/fonts/` и пропишите `@font-face` в `src/styles/main.css` для `--font-display` / `--font-accent`.
 
