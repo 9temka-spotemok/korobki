@@ -11,6 +11,15 @@ npm install
 npm run dev
 ```
 
+## Адаптив (лендинг)
+
+| Ширина | Поведение |
+|---|---|
+| `>1100px` | Полное меню, сгиб от лого, сетка продукции 4 кол. |
+| `≤1100px` | Бургер справа у CTA; выпадающее меню; контраст ссылок на тёмной панели |
+| `≤960px` | Без mark/сгиба; сплиты в 1 кол.; продукция 2 кол.; форма в 1 кол. |
+| `≤640px` | Продукция 1 кол.; кнопки hero на всю ширину; уплотнённые отступы |
+
 Сборка статики в `dist/`:
 
 ```bash
@@ -24,7 +33,7 @@ npm run preview
 |---|---|
 | `index.html` | Главная: hero, «Почему», продукция (сетка + модалка), печать, логистика, форма |
 | `catalog.html` | Каталог: сетка типов + модалка, группы FEFCO |
-| `print.html` | Печать логотипов (флексо, PANTONE) |
+| `print.html` | Печать логотипов (флексо, PANTONE + фото каталогов) |
 | `delivery.html` | Доставка, самовывоз, оплата |
 | `contacts.html` | Телефон, email, адрес, карта, форма |
 
@@ -37,7 +46,7 @@ npm run preview
 | `src/js/main.js` | Навигация, меню, форма, reveal, `initFoldDash`, `renderProductList`, `initProductModal` |
 | `src/partials/shell.js` | Разметка формы заявки (`.form-panel`, согласие `.form-consent`) и partials шапки/подвала |
 | `src/data/catalog.js` | Данные типов продукции, FEFCO-групп и материалов |
-| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.products-statement` + `.product-grid`; `.product-modal` |
+| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.products-statement` + `.product-grid` (subgrid выравнивает названия); `.product-modal` |
 | `public/brand/` | Логотипы PNG и PDF брендбука |
 | `public/brand/logo-horizontal-light.png` | Горизонтальный логотип для тёмного фона (шапка/подвал) |
 | `public/brand/logo-horizontal-dark.png` | Горизонтальный логотип для светлого фона |
@@ -49,8 +58,9 @@ npm run preview
 | `public/images/corrugated.jpg` | Фото гофрокартона для 1-го пункта блока «Почему» |
 | `public/images/production.jpg` | Фото производства для 2-го пункта блока «Почему» |
 | `public/images/print-flexo.png` | Макет печати до 3 цветов для 3-го пункта блока «Почему» |
+| `public/images/pantone-guides.png` | Каталоги PANTONE на странице `print.html` |
 | `public/images/products/` | Фото типов упаковки (по `id` из `catalog.js`) |
-| `public/images/products/*.png` | Фото типов (сейчас тестовый короб на все 8; заменить по именам `id`) |
+| `public/images/products/*.png` | Фото типов упаковки по `id` из `catalog.js` |
 
 ## Бренд
 
@@ -61,7 +71,7 @@ npm run preview
 
 ### Оранжевый сгиб (главная)
 
-Продолжение белого пунктира сгиба из `logo-mark-light.png`: вниз → влево → вниз → вправо («Печать») → вниз → влево до середины → вниз в форму заявки.
+Продолжение белого пунктира сгиба из `logo-mark-light.png`: вниз → влево → вниз → вправо («Печать») → вниз → влево в кубик формы заявки.
 
 | Элемент | Роль |
 |---|---|
@@ -69,8 +79,8 @@ npm run preview
 | `.fold-svg__path` | Path со `stroke-dasharray` 32/21 |
 | `[data-fold-stop]` (`.why-fold-line`) | Верхняя горизонталь (под «Почему») |
 | `[data-fold-turn]` (`.section--print`) | Поворот вправо |
-| `[data-fold-return]` (`#order`) | Горизонталь над заявкой; короткий спуск в центр формы и конец |
-| `initFoldDash()` в `main.js` | Координаты path; углы на середине штриха, сегменты кратны `dash+gap` |
+| `[data-fold-return]` (`#order`) | Якорь секции заявки; вход пунктира в `.form-panel` |
+| `initFoldDash()` в `main.js` | Координаты path; правый спуск у края main, минуя тексты колонок |
 
 Чтобы подключить файлы Tablon Black / Bebas Neue локально (если есть woff2 с кириллицей), положите их в `public/fonts/` и пропишите `@font-face` в `src/styles/main.css` для `--font-display` / `--font-accent`.
 

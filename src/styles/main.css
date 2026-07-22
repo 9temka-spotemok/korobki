@@ -32,6 +32,11 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body.is-nav-open {
+  overflow: hidden;
 }
 
 body {
@@ -347,7 +352,7 @@ select {
 .fold-svg {
   position: absolute;
   top: 100%;
-  z-index: 2;
+  z-index: 0;
   pointer-events: none;
   overflow: visible;
 }
@@ -487,6 +492,23 @@ select {
   margin-bottom: 2.5rem;
 }
 
+.section-head--center {
+  text-align: center;
+}
+
+.section-head--center .section__eyebrow {
+  margin-bottom: 1rem;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.section-head--center .section__title,
+.section-head--center .section__lead {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ——— Why block (centered statement) ——— */
 .section--why {
   position: relative;
@@ -624,11 +646,12 @@ select {
   margin-top: 2.5rem;
 }
 
-/* Сетка 4×2 — без «таблицы», только gap */
+/* Сетка 4×2: subgrid выравнивает название → описания в ряду на одной линии */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rem 1.5rem;
+  column-gap: 1.5rem;
+  row-gap: 0.65rem;
 }
 
 .product-list {
@@ -679,21 +702,27 @@ select {
 
 .product-grid .product-item {
   display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
   gap: 0.65rem;
+  margin: 0 0 1.35rem;
   padding: 0;
   border: none;
-  align-content: start;
+  align-items: start;
+  justify-items: center;
   text-align: center;
 }
 
 .product-grid .product-item__img {
   box-sizing: border-box;
-  width: 100%;
-  height: 128px;
+  width: auto;
+  max-width: 88%;
+  height: 180px;
   margin: 0 auto;
-  padding: 0.4rem;
+  padding: 0;
   object-fit: contain;
   object-position: center;
+  border-radius: 0.85rem;
 }
 
 .product-grid .product-item:hover {
@@ -717,8 +746,11 @@ select {
 
 .product-grid .product-item__title {
   margin: 0;
+  width: 100%;
   font-size: 1.15rem;
   line-height: 1.25;
+  text-wrap: balance;
+  align-self: end;
 }
 
 .product-item p {
@@ -729,12 +761,10 @@ select {
 
 .product-grid .product-item p {
   max-width: none;
+  width: 100%;
   font-size: 0.9rem;
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
+  align-self: start;
 }
 
 .product-item--compact p {
@@ -789,6 +819,7 @@ body.is-modal-open {
   height: 220px;
   margin: 0 auto 1.25rem;
   object-fit: contain;
+  border-radius: 0.85rem;
 }
 
 .product-modal__title {
@@ -845,6 +876,41 @@ body.is-modal-open {
   margin-bottom: 1.75rem;
   max-width: 38ch;
   color: rgba(255, 255, 255, 0.62);
+}
+
+.print-pantone {
+  margin: 0;
+  overflow: visible;
+  background: transparent;
+}
+
+.print-pantone img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.feature-row--print {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem 2rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.feature-row--print article h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-accent);
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.feature-row--print article p {
+  margin: 0;
+  color: var(--color-muted);
+  max-width: 32ch;
 }
 
 .material-list {
@@ -1016,8 +1082,26 @@ body.is-modal-open {
   grid-column: 2;
 }
 
+/* ——— Order / form ——— */
+.section--order {
+  overflow: visible;
+}
+
+.order-block {
+  position: relative;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.order-block__form {
+  position: relative;
+  z-index: 2;
+}
+
 /* ——— Form ——— */
 .form-panel {
+  position: relative;
+  z-index: 2;
   background: var(--color-white);
   color: var(--color-ink);
   padding: 2.5rem;
@@ -1272,10 +1356,19 @@ body.is-modal-open {
   margin-top: 0.4rem;
 }
 
-/* ——— Mobile ——— */
+/* ——— Tablet / mobile ——— */
 @media (max-width: 1100px) {
   .menu-toggle {
     display: block;
+    order: 2;
+    margin-left: auto;
+  }
+
+  .nav-cta {
+    order: 3;
+    min-height: 40px;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.85rem;
   }
 
   .site-header__inner {
@@ -1284,7 +1377,12 @@ body.is-modal-open {
     gap: 0.5rem;
   }
 
+  .logo {
+    order: 1;
+  }
+
   .nav {
+    order: 4;
     position: absolute;
     top: calc(100% + 0.5rem);
     left: 0;
@@ -1295,7 +1393,7 @@ body.is-modal-open {
     justify-content: flex-start;
     gap: 0;
     padding: 0.75rem 1rem 1rem;
-    background: rgba(26, 26, 29, 0.94);
+    background: rgba(26, 26, 29, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 22px;
     box-shadow: 0 12px 36px rgba(26, 26, 29, 0.28);
@@ -1317,10 +1415,15 @@ body.is-modal-open {
     color: rgba(255, 255, 255, 0.88);
   }
 
-  .nav-cta {
-    min-height: 40px;
-    padding: 0.45rem 0.95rem;
-    font-size: 0.85rem;
+  .site-header.is-scrolled .nav a {
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .site-header.is-scrolled .nav a:hover,
+  .site-header.is-scrolled .nav a.is-active,
+  .nav a:hover,
+  .nav a.is-active {
+    color: var(--color-orange);
   }
 
   .logo img {
@@ -1329,14 +1432,37 @@ body.is-modal-open {
 }
 
 @media (max-width: 960px) {
+  /* сгиб и mark только на десктопе — иначе линия режет тексты */
   .hero__mark-wrap {
-    right: 1rem;
-    width: min(40vw, 300px);
-    top: 4%;
+    display: none;
   }
 
-  .hero__mark {
-    opacity: 0.55;
+  .hero {
+    min-height: auto;
+    padding-top: calc(var(--header-h) + 1.25rem);
+    padding-bottom: 3rem;
+  }
+
+  .hero__content {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .hero__brand {
+    font-size: clamp(2.4rem, 10vw, 3.4rem);
+  }
+
+  .hero h1 {
+    font-size: clamp(1.85rem, 6.5vw, 2.6rem);
+  }
+
+  .btn-group {
+    width: 100%;
+  }
+
+  .btn-group .btn {
+    flex: 1 1 auto;
+    min-width: min(100%, 11rem);
   }
 
   .feature-item {
@@ -1349,30 +1475,70 @@ body.is-modal-open {
   }
 
   .steps,
+  .feature-row--print {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
   .split,
   .split--reverse,
+  .split--print,
+  .split--logistics,
   .contact-grid,
   .info-blocks {
     grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .print-intro .section__title,
+  .logistics-intro .section__title,
+  .section__title {
+    max-width: none;
+  }
+
+  .products-statement__line--accent {
+    white-space: normal;
   }
 
   .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.75rem 1.15rem;
   }
 
   .product-grid .product-item__img {
-    height: 132px;
+    height: 148px;
+    max-width: 82%;
+  }
+
+  .product-grid .product-item__title {
+    font-size: 1.05rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-panel {
+    padding: 1.75rem 1.35rem;
+  }
+
+  .print-pantone {
+    max-width: 420px;
+    margin-inline: auto;
   }
 }
 
 @media (max-width: 640px) {
+  :root {
+    --header-h: 72px;
+  }
+
   .container {
     width: min(100% - 1.5rem, var(--container));
   }
 
   .section {
-    padding: 4rem 0;
+    padding: 3.5rem 0;
   }
 
   .btn {
@@ -1383,17 +1549,28 @@ body.is-modal-open {
   }
 
   .hero {
-    min-height: 100svh;
-    align-items: flex-start;
-    padding-top: calc(var(--header-h) + 1rem);
-  }
-
-  .hero__mark-wrap {
-    display: none;
+    padding-top: calc(var(--header-h) + 0.85rem);
+    padding-bottom: 2.5rem;
   }
 
   .hero__content {
-    padding: 0 0 2.5rem;
+    padding: 0 0 0.5rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .btn-group .btn {
+    width: 100%;
+  }
+
+  .why-statement {
+    font-size: clamp(1.7rem, 8vw, 2.4rem);
+  }
+
+  .products-statement__title {
+    font-size: clamp(1.7rem, 8vw, 2.5rem);
   }
 
   .product-grid {
@@ -1401,23 +1578,45 @@ body.is-modal-open {
     gap: 1.75rem;
   }
 
-  .products-statement__line--accent {
-    white-space: normal;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
+  .product-grid .product-item__img {
+    height: 180px;
+    max-width: 70%;
   }
 
   .form-panel {
-    padding: 1.5rem;
+    padding: 1.35rem 1.15rem;
+    border-radius: 1.1rem;
   }
 
   .form-actions .btn {
-    min-width: min(100%, 14rem);
+    width: 100%;
+    min-width: 0;
   }
 
   .site-footer__top {
     flex-direction: column;
+  }
+
+  .site-footer__bottom {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .section-head--center .section__eyebrow {
+    font-size: clamp(1.4rem, 7vw, 2rem);
+  }
+}
+
+@media (max-width: 640px) and (max-height: 720px) {
+  .hero {
+    min-height: auto;
+  }
+
+  .hero__brand {
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    margin-bottom: 0.75rem;
   }
 }

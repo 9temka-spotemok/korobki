@@ -21,16 +21,16 @@ function initFoldDash() {
   const ret = document.querySelector('[data-fold-return]')
   if (!svg || !path || !mark || !stop || !turn || !ret) return
 
-  // Path: … → вправо (Печать) → вниз → влево до середины → вниз в форму.
+  // Path: … → вправо (Печать) → вниз → влево в кубик формы.
   const LOGO_W = 1205
   const FOLD_CX = 602.5
   const DASH = 32
   const GAP = 21
   const STROKE = 11
   const SIDE_OUTSET = 28
-  const RIGHT_EXTRA = 20
+  const RIGHT_INSET = 14
+  const TEXT_CLEAR = 28
 
-  // Угол в середине штриха; следующие сегменты — кратны period, чтобы стык не рвался.
   const snapLen = (len, period, dash) => {
     const mod = ((len % period) + period) % period
     let delta = dash / 2 - mod
@@ -44,11 +44,17 @@ function initFoldDash() {
     return n * period
   }
 
+  const desktopFold = window.matchMedia('(min-width: 961px)')
+
+  const clearFold = () => {
+    path.setAttribute('d', '')
+    svg.setAttribute('width', '0')
+    svg.setAttribute('height', '0')
+  }
+
   const update = () => {
-    if (window.getComputedStyle(mark).display === 'none') {
-      path.setAttribute('d', '')
-      svg.setAttribute('width', '0')
-      svg.setAttribute('height', '0')
+    if (!desktopFold.matches || window.getComputedStyle(mark).display === 'none') {
+      clearFold()
       return
     }
 
@@ -61,8 +67,9 @@ function initFoldDash() {
     const containerRect = container.getBoundingClientRect()
     const main = document.querySelector('.site-main')
     const mainRect = main ? main.getBoundingClientRect() : containerRect
+    const form = document.querySelector('[data-lead-form]')
+    const formRect = (form || ret).getBoundingClientRect()
 
-    // SVG top: 100% от mark — все Y считаем от низа обёртки
     const originY = markRect.bottom
     const toY = (clientY) => clientY - originY
 
@@ -73,18 +80,14 @@ function initFoldDash() {
     const pad = thickness / 2
     const period = dash + gap
 
-    // Ось как у белого сгиба: CSS left% по ширине лого (img), не mark-box
     const foldX = imgRect.left + imgRect.width * (FOLD_CX / LOGO_W)
     const leftEdge = Math.max(
       mainRect.left + thickness,
       containerRect.left - SIDE_OUTSET,
     )
-    const rightEdge = Math.min(
-      mainRect.right - thickness,
-      containerRect.right + SIDE_OUTSET + RIGHT_EXTRA,
-    )
+    // правый край — у края main, чтобы вертикаль не резала тексты в колонках
+    const rightEdge = mainRect.right - RIGHT_INSET
 
-    // left% = ось сгиба; translateX сдвигает SVG так, что x=0 → leftEdge
     const width = Math.max(rightEdge - leftEdge, thickness * 2)
     const xFold = foldX - leftEdge
     svg.style.left = `calc(100% * ${FOLD_CX} / ${LOGO_W})`
@@ -105,30 +108,21 @@ function initFoldDash() {
     const yTurnRaw = toY(turnRect.top) + thickness
     const yTurn = yCorner + quantize(Math.max(period, yTurnRaw - yCorner), period)
 
-    let xDrop = xLeft + quantize(Math.max(period, xRight - xLeft), period)
-    if (xDrop > xRight) xDrop -= period
-    if (xDrop < xLeft + period) xDrop = xLeft + period
-
-    const form = document.querySelector('[data-lead-form]')
-    const formRect = (form || ret).getBoundingClientRect()
-
-    // горизонталь чуть выше карточки формы (floor — не заезжаем в форму)
-    const yReturnRaw = toY(formRect.top) - thickness
-    const returnSeg = Math.max(
-      period,
-      Math.floor(Math.max(0, yReturnRaw - yTurn) / period) * period,
+    // горизонталь на «Печать» тянем правее текстов (material-list / колонки)
+    const materials = turn.querySelector('[data-materials], .material-list')
+    const logisticsCol = document.querySelector('.section--logistics .steps')
+    const clearRight = Math.max(
+      materials ? materials.getBoundingClientRect().right + TEXT_CLEAR : 0,
+      logisticsCol ? logisticsCol.getBoundingClientRect().right + TEXT_CLEAR : 0,
+      containerRect.right + SIDE_OUTSET,
     )
-    const yReturn = yTurn + returnSeg
+    let xDrop = Math.min(xRight, Math.max(xLeft + period, clearRight - leftEdge))
 
-    const xMidRaw = formRect.left + formRect.width / 2 - leftEdge
-    let xMid = xDrop - quantize(Math.max(period, xDrop - xMidRaw), period)
-    if (xMid < xLeft + period) xMid = xDrop - period
+    // вниз справа → влево в кубик формы
+    const yCube = toY(formRect.top + Math.min(72, formRect.height * 0.22))
+    const xCube = formRect.right - leftEdge - Math.min(64, formRect.width * 0.14)
 
-    // короткий вход в верх формы
-    const enter = Math.max(period, dash)
-    const yForm = Math.max(yReturn + enter, toY(formRect.top) + enter)
-
-    const height = Math.max(yForm + thickness, thickness * 2)
+    const height = Math.max(yCube, toY(formRect.bottom)) + thickness
 
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
     svg.setAttribute('width', String(width))
@@ -137,7 +131,7 @@ function initFoldDash() {
 
     path.setAttribute(
       'd',
-      `M ${xFold} ${yStart} L ${xFold} ${yCorner} L ${xLeft} ${yCorner} L ${xLeft} ${yTurn} L ${xDrop} ${yTurn} L ${xDrop} ${yReturn} L ${xMid} ${yReturn} L ${xMid} ${yForm}`,
+      `M ${xFold} ${yStart} L ${xFold} ${yCorner} L ${xLeft} ${yCorner} L ${xLeft} ${yTurn} L ${xDrop} ${yTurn} L ${xDrop} ${yCube} L ${xCube} ${yCube}`,
     )
     path.setAttribute('stroke', '#ff5a1f')
     path.setAttribute('stroke-width', String(thickness))
@@ -153,6 +147,9 @@ function initFoldDash() {
   schedule()
   window.addEventListener('resize', schedule)
   window.addEventListener('load', schedule)
+  desktopFold.addEventListener('change', schedule)
+  mark.addEventListener('animationend', schedule)
+  if (document.fonts?.ready) document.fonts.ready.then(schedule)
   const img = mark.querySelector('img')
   if (img && !img.complete) img.addEventListener('load', schedule)
 
@@ -207,16 +204,32 @@ function initNav() {
   const nav = document.querySelector('.nav')
   if (!toggle || !nav) return
 
-  toggle.addEventListener('click', () => {
-    const open = nav.classList.toggle('is-open')
+  const setOpen = (open) => {
+    nav.classList.toggle('is-open', open)
     toggle.setAttribute('aria-expanded', String(open))
+    document.body.classList.toggle('is-nav-open', open)
+  }
+
+  toggle.addEventListener('click', () => {
+    setOpen(!nav.classList.contains('is-open'))
   })
 
   nav.querySelectorAll('a').forEach((a) => {
-    a.addEventListener('click', () => {
-      nav.classList.remove('is-open')
-      toggle.setAttribute('aria-expanded', 'false')
-    })
+    a.addEventListener('click', () => setOpen(false))
+  })
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setOpen(false)
+  })
+
+  document.addEventListener('click', (event) => {
+    if (!nav.classList.contains('is-open')) return
+    if (nav.contains(event.target) || toggle.contains(event.target)) return
+    setOpen(false)
+  })
+
+  window.matchMedia('(min-width: 1101px)').addEventListener('change', (mq) => {
+    if (mq.matches) setOpen(false)
   })
 }
 
@@ -248,8 +261,7 @@ function renderProductList(selector, { compact = false, modal = false } = {}) {
       const openAttr = modal ? `type="button" data-product-open="${item.id}"` : ''
       const idAttr = modal ? '' : `id="${item.id}"`
       const tag = modal ? 'button' : 'article'
-      return `
-        <${tag} class="product-item${compact ? ' product-item--compact' : ''}" ${openAttr} ${idAttr}>
+      const img = `
           <img
             class="product-item__img"
             src="${item.image}"
@@ -257,11 +269,19 @@ function renderProductList(selector, { compact = false, modal = false } = {}) {
             width="${compact ? 96 : 640}"
             height="${compact ? 96 : 360}"
             loading="lazy"
-          />
+          />`
+      const text = compact
+        ? `
           <div class="product-item__body">
             <span class="product-item__title">${item.title}</span>
             <p>${item.description}</p>
-          </div>
+          </div>`
+        : `
+          <span class="product-item__title">${item.title}</span>
+          <p>${item.description}</p>`
+      return `
+        <${tag} class="product-item${compact ? ' product-item--compact' : ''}" ${openAttr} ${idAttr}>
+          ${img}${text}
         </${tag}>
       `
     })
