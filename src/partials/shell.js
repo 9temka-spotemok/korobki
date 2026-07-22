@@ -69,14 +69,18 @@ export const leadFormHTML = `
         <textarea id="lead-message" name="message" placeholder="Тип упаковки, размеры, тираж, нужна ли печать"></textarea>
       </div>
       <div class="form-field form-field--full">
-        <label>
+        <label class="form-consent">
           <input type="checkbox" name="consent" value="1" required />
-          Согласен на обработку персональных данных
+          <span>Согласен на обработку персональных данных</span>
         </label>
       </div>
     </div>
     <p class="form-error" role="alert"></p>
-    <button class="btn btn--primary" type="submit">Отправить заявку</button>
-    <p class="form-note">Заявка откроется в почтовом клиенте на адрес отдела продаж.</p>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Отправить заявку</button>
+      <p class="form-note">
+        Заявка откроется в почтовом клиенте на адрес отдела продаж.
+      </p>
+    </div>
   </form>
 `

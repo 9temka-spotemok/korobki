@@ -5,48 +5,56 @@ export const productTypes = [
     title: 'Четырёхклапанные гофрокороба',
     description:
       'Классические ящики из трёхслойного и пятислойного гофрокартона. Стандартные и индивидуальные размеры.',
+    image: '/images/products/four-flap.png',
   },
   {
     id: 'trays',
     title: 'Гофролотки с крышкой',
     description:
       'Лотки для хранения и транспортировки. Удобная сборка, надёжная фиксация крышки.',
+    image: '/images/products/trays.png',
   },
   {
     id: 'self-lock',
     title: 'Самосборные гофрокороба',
     description:
       'Конструкции без клея и скоб: быстрая сборка на месте, экономия на логистике плоских заготовок.',
+    image: '/images/products/self-lock.png',
   },
   {
     id: 'die-cut',
     title: 'Вырубная гофротара',
     description:
       'Сложная высечка и нестандартные конфигурации под продукт: лотки, вкладыши, фигурные короба.',
+    image: '/images/products/die-cut.png',
   },
   {
     id: 'microflute',
     title: 'Микрогофрокартон',
     description:
       'Короба и лотки из микрогофрокартона для лёгкой и розничной упаковки с аккуратным внешним видом.',
+    image: '/images/products/microflute.png',
   },
   {
     id: 'reinforced',
     title: 'Усиленные гофроящики',
     description:
       'Упаковка повышенной прочности для тяжёлых и габаритных грузов. Профили B, C, BC.',
+    image: '/images/products/reinforced.png',
   },
   {
     id: 'fullcolor',
     title: 'Полноцветная упаковка',
     description:
       'Упаковка с выразительным внешним слоем под брендинг и презентацию продукта.',
+    image: '/images/products/fullcolor.png',
   },
   {
     id: 'industry',
     title: 'Отраслевая упаковка',
     description:
       'Решения для пищевой, аграрной, кондитерской, алкогольной, химической промышленности, мебели и техники.',
+    image: '/images/products/industry.png',
   },
 ]
 

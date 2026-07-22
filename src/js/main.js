@@ -13,24 +13,150 @@ const CONTACTS = {
 }
 
 function initFoldDash() {
+  const svg = document.querySelector('.fold-svg')
+  const path = document.querySelector('.fold-svg__path')
   const mark = document.querySelector('.hero__mark-wrap')
-  const line = document.querySelector('[data-fold-line]')
   const stop = document.querySelector('[data-fold-stop]')
-  if (!mark || !line || !stop) return
+  const turn = document.querySelector('[data-fold-turn]')
+  const ret = document.querySelector('[data-fold-return]')
+  if (!svg || !path || !mark || !stop || !turn || !ret) return
 
-  // Линия внутри .hero__mark-wrap — ось задаёт CSS (центр сгиба).
-  // JS только тянет высоту до [data-fold-stop].
+  // Path: … → вправо (Печать) → вниз → влево до середины → вниз в форму.
+  const LOGO_W = 1205
+  const FOLD_CX = 602.5
+  const DASH = 32
+  const GAP = 21
+  const STROKE = 11
+  const SIDE_OUTSET = 28
+  const RIGHT_EXTRA = 20
+
+  const snapCornerY = (yCorner, yStart, xFold, xLeft, period, dash) => {
+    const len =
+      Math.max(0, yCorner - yStart) + Math.max(0, xFold - xLeft)
+    const mod = len % period
+    const target = dash / 2
+    let delta = target - mod
+    if (delta > period / 2) delta -= period
+    if (delta < -period / 2) delta += period
+    return yCorner + delta
+  }
+
   const update = () => {
     if (window.getComputedStyle(mark).display === 'none') {
-      line.style.height = '0px'
+      path.setAttribute('d', '')
+      svg.setAttribute('width', '0')
+      svg.setAttribute('height', '0')
       return
     }
 
     const img = mark.querySelector('.hero__mark') || mark.querySelector('img')
     const imgRect = (img || mark).getBoundingClientRect()
+    const markRect = mark.getBoundingClientRect()
     const stopRect = stop.getBoundingClientRect()
-    const h = Math.max(0, stopRect.top + stopRect.height / 2 - imgRect.bottom)
-    line.style.height = `${h}px`
+    const turnRect = turn.getBoundingClientRect()
+    const retRect = ret.getBoundingClientRect()
+    const container = stop.closest('.container') || stop.parentElement
+    const containerRect = container.getBoundingClientRect()
+    const main = document.querySelector('.site-main')
+    const mainRect = main ? main.getBoundingClientRect() : containerRect
+
+    const scale = imgRect.width / LOGO_W
+    const dash = DASH * scale
+    const gap = GAP * scale
+    const thickness = Math.max(2, STROKE * scale)
+    const pad = thickness / 2
+    const period = dash + gap
+
+    // Ось как у белого сгиба: CSS left% по ширине лого (img), не mark-box
+    const foldX = imgRect.left + imgRect.width * (FOLD_CX / LOGO_W)
+    const leftEdge = Math.max(
+      mainRect.left + thickness,
+      containerRect.left - SIDE_OUTSET,
+    )
+    const rightEdge = Math.min(
+      mainRect.right - thickness,
+      containerRect.right + SIDE_OUTSET + RIGHT_EXTRA,
+    )
+
+    // left% = ось сгиба; translateX сдвигает SVG так, что x=0 → leftEdge
+    const width = Math.max(rightEdge - leftEdge, thickness * 2)
+    const xFold = foldX - leftEdge
+    svg.style.left = `calc(100% * ${FOLD_CX} / ${LOGO_W})`
+    svg.style.transform = `translateX(${-xFold}px)`
+
+    const xLeft = pad
+    const xRight = width - pad
+
+    const yStart = gap
+    let yCorner = stopRect.top + stopRect.height / 2 - imgRect.bottom
+    yCorner = snapCornerY(yCorner, yStart, xFold, xLeft, period, dash)
+
+    let yTurn = turnRect.top + thickness - imgRect.bottom
+    const lenToTurn =
+      Math.max(0, yCorner - yStart) +
+      Math.max(0, xFold - xLeft) +
+      Math.max(0, yTurn - yCorner)
+    const modTurn = lenToTurn % period
+    let deltaTurn = dash / 2 - modTurn
+    if (deltaTurn > period / 2) deltaTurn -= period
+    if (deltaTurn < -period / 2) deltaTurn += period
+    yTurn += deltaTurn
+    yTurn = Math.max(yTurn, yCorner)
+
+    // правый верхний угол горизонтали — mid-dash
+    const lenToRight =
+      lenToTurn + deltaTurn + Math.max(0, xRight - xLeft)
+    const modRight = ((lenToRight % period) + period) % period
+    let deltaRight = dash / 2 - modRight
+    if (deltaRight > period / 2) deltaRight -= period
+    if (deltaRight < -period / 2) deltaRight += period
+    let xDrop = Math.min(Math.max(xRight + deltaRight, xLeft + period), width - pad)
+
+    // влево над заявкой до середины формы, затем вниз в форму
+    let yReturn = retRect.top + thickness - imgRect.bottom
+    const lenToReturn =
+      lenToRight + deltaRight + Math.max(0, yReturn - yTurn)
+    const modReturn = ((lenToReturn % period) + period) % period
+    let deltaReturn = dash / 2 - modReturn
+    if (deltaReturn > period / 2) deltaReturn -= period
+    if (deltaReturn < -period / 2) deltaReturn += period
+    yReturn += deltaReturn
+    yReturn = Math.max(yReturn, yTurn)
+
+    const form = document.querySelector('[data-lead-form]')
+    const formRect = (form || ret).getBoundingClientRect()
+
+    let xMid = formRect.left + formRect.width / 2 - leftEdge
+    const lenToMid =
+      lenToReturn + deltaReturn + Math.max(0, xDrop - xMid)
+    const modMid = ((lenToMid % period) + period) % period
+    let deltaMid = dash / 2 - modMid
+    if (deltaMid > period / 2) deltaMid -= period
+    if (deltaMid < -period / 2) deltaMid += period
+    xMid = Math.min(Math.max(xMid + deltaMid, xLeft + period), xDrop - period)
+
+    // входит в верх формы и сразу заканчивается (не режет поля)
+    const enter = Math.max(period * 0.7, 18)
+    let yForm = formRect.top - imgRect.bottom + enter
+    yForm = Math.max(yForm, yReturn + enter)
+
+    const height = Math.max(yForm + thickness, thickness * 2)
+
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
+    svg.setAttribute('width', String(width))
+    svg.setAttribute('height', String(height))
+    svg.setAttribute('overflow', 'visible')
+
+    path.setAttribute(
+      'd',
+      `M ${xFold} ${yStart} L ${xFold} ${yCorner} L ${xLeft} ${yCorner} L ${xLeft} ${yTurn} L ${xDrop} ${yTurn} L ${xDrop} ${yReturn} L ${xMid} ${yReturn} L ${xMid} ${yForm}`,
+    )
+    path.setAttribute('stroke', '#ff5a1f')
+    path.setAttribute('stroke-width', String(thickness))
+    path.setAttribute('stroke-dasharray', `${dash} ${gap}`)
+    path.setAttribute('stroke-dashoffset', '0')
+    path.setAttribute('stroke-linejoin', 'round')
+    path.setAttribute('shape-rendering', 'geometricPrecision')
   }
 
   const schedule = () => requestAnimationFrame(() => requestAnimationFrame(update))
@@ -44,8 +170,18 @@ function initFoldDash() {
   const ro = new ResizeObserver(schedule)
   ro.observe(mark)
   ro.observe(stop)
+  ro.observe(turn)
+  ro.observe(ret)
+  const formEl = document.querySelector('[data-lead-form]')
+  if (formEl) ro.observe(formEl)
   const why = document.querySelector('.section--why')
   if (why) ro.observe(why)
+  const products = document.querySelector('.section--products')
+  if (products) ro.observe(products)
+  const logistics = document.querySelector('.section--logistics')
+  if (logistics) ro.observe(logistics)
+  const main = document.querySelector('.site-main')
+  if (main) ro.observe(main)
 }
 
 function initHeaderScroll() {
@@ -114,26 +250,87 @@ function initReveal() {
   items.forEach((el) => io.observe(el))
 }
 
-function renderProductList(selector, { linkToCatalog = false } = {}) {
+function renderProductList(selector, { compact = false, modal = false } = {}) {
   const root = document.querySelector(selector)
   if (!root) return
 
   root.innerHTML = productTypes
     .map((item) => {
-      const link = linkToCatalog
-        ? `<span class="product-item__link">В каталог →</span>`
-        : ''
-      const tag = linkToCatalog ? 'a' : 'article'
-      const href = linkToCatalog ? `catalog.html#${item.id}` : ''
+      const openAttr = modal ? `type="button" data-product-open="${item.id}"` : ''
+      const idAttr = modal ? '' : `id="${item.id}"`
+      const tag = modal ? 'button' : 'article'
       return `
-        <${tag} class="product-item" ${href ? `href="${href}"` : ''} id="${item.id}">
-          <h3>${item.title}</h3>
-          <p>${item.description}</p>
-          ${link}
+        <${tag} class="product-item${compact ? ' product-item--compact' : ''}" ${openAttr} ${idAttr}>
+          <img
+            class="product-item__img"
+            src="${item.image}"
+            alt="${item.title}"
+            width="${compact ? 96 : 640}"
+            height="${compact ? 96 : 360}"
+            loading="lazy"
+          />
+          <div class="product-item__body">
+            <span class="product-item__title">${item.title}</span>
+            <p>${item.description}</p>
+          </div>
         </${tag}>
       `
     })
     .join('')
+}
+
+function initProductModal() {
+  const modal = document.querySelector('[data-product-modal]')
+  if (!modal) return
+
+  const img = modal.querySelector('[data-product-img]')
+  const title = modal.querySelector('[data-product-title]')
+  const desc = modal.querySelector('[data-product-desc]')
+  const cta = modal.querySelector('[data-product-cta]')
+  const closeBtn = modal.querySelector('[data-product-close]')
+  let activeId = ''
+
+  const byId = Object.fromEntries(productTypes.map((item) => [item.id, item]))
+
+  const open = (id) => {
+    const item = byId[id]
+    if (!item) return
+    activeId = id
+    img.src = item.image
+    img.alt = item.title
+    title.textContent = item.title
+    desc.textContent = item.description
+    modal.showModal()
+    document.body.classList.add('is-modal-open')
+  }
+
+  const close = () => {
+    modal.close()
+    document.body.classList.remove('is-modal-open')
+  }
+
+  document.querySelectorAll('[data-product-open]').forEach((btn) => {
+    btn.addEventListener('click', () => open(btn.getAttribute('data-product-open')))
+  })
+
+  closeBtn.addEventListener('click', close)
+
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) close()
+  })
+
+  modal.addEventListener('close', () => {
+    document.body.classList.remove('is-modal-open')
+  })
+
+  cta.addEventListener('click', () => {
+    const item = byId[activeId]
+    const message = document.querySelector('#lead-message')
+    if (item && message) {
+      message.value = `Интересует: ${item.title}`
+    }
+    close()
+  })
 }
 
 function renderFefco(selector) {
@@ -228,12 +425,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeaderScroll()
   initNav()
   fillContactSlots()
-  renderProductList('[data-products-home]', { linkToCatalog: true })
-  renderProductList('[data-products-catalog]')
+  renderProductList('[data-products-home]', { modal: true })
+  renderProductList('[data-products-catalog]', { modal: true })
   renderFefco('[data-fefco]')
   renderMaterials('[data-materials]')
   initReveal()
   initLeadForm()
+  initProductModal()
   initFoldDash()
 
   if (window.location.hash) {

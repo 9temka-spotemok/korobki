@@ -55,8 +55,15 @@
             width="520"
             height="584"
           />
-          <!-- ось = центр белого сгиба лого; линия в том же боксе → не съезжает -->
-          <span class="fold-line-v" data-fold-line></span>
+          <!-- U-сгиб в том же боксе, что лого: left% = ось белого пунктира -->
+          <svg class="fold-svg" aria-hidden="true">
+            <path
+              class="fold-svg__path"
+              fill="none"
+              stroke-linecap="butt"
+              stroke-linejoin="round"
+            />
+          </svg>
         </div>
         <div class="container hero__content">
           <p class="hero__brand">
@@ -80,7 +87,10 @@
           <h2 class="why-statement reveal">
             <span class="why-statement__line">Почему БАЛТКАРТОН?</span>
             <span class="why-statement__line why-statement__line--accent"
-              >Упаковка, которая держит логистику</span
+              >Упаковка, которая</span
+            >
+            <span class="why-statement__line why-statement__line--accent"
+              >держит логистику</span
             >
           </h2>
           <p class="why-statement__lead reveal">
@@ -135,8 +145,8 @@
               </div>
               <div class="feature-item__media">
                 <img
-                  src="/images/corrugated.jpg"
-                  alt="Структура гофрированного картона"
+                  src="/images/print-flexo.png"
+                  alt="Печать до 3 цветов на гофрокоробе БАЛТКАРТОН"
                   width="640"
                   height="360"
                   loading="lazy"
@@ -147,26 +157,32 @@
         </div>
       </section>
 
-      <section class="section section--paper">
+      <section class="section section--white section--products">
         <div class="container">
-          <div class="section-head reveal">
-            <p class="section__eyebrow">Продукция</p>
-            <h2 class="section__title">Типы гофроупаковки</h2>
-            <p class="section__lead">
+          <div class="products-statement reveal">
+            <h2 class="products-statement__title">
+              <span class="products-statement__line">Продукция</span>
+              <span
+                class="products-statement__line products-statement__line--accent"
+                >Типы гофроупаковки</span
+              >
+            </h2>
+            <p class="products-statement__lead">
               Транспортная и потребительская тара для пищевой, аграрной,
               кондитерской, алкогольной и химической промышленности, мебели и
               техники.
             </p>
           </div>
           <div class="product-grid reveal" data-products-home></div>
-          <div class="dash-line" aria-hidden="true"></div>
-          <a class="btn btn--dark" href="catalog.html">Весь каталог и FEFCO</a>
+          <div class="products-cta reveal">
+            <a class="btn btn--dark" href="catalog.html">Весь каталог и FEFCO</a>
+          </div>
         </div>
       </section>
 
-      <section class="section section--dark">
-        <div class="container split">
-          <div class="reveal">
+      <section class="section section--dark section--print" data-fold-turn>
+        <div class="container split split--print">
+          <div class="print-intro reveal">
             <p class="section__eyebrow">Печать</p>
             <h2 class="section__title">Логотип на коробке — без лишнего шума</h2>
             <p class="section__lead">
@@ -181,17 +197,18 @@
         </div>
       </section>
 
-      <section class="section section--white">
-        <div class="container">
-          <div class="section-head reveal">
+      <section class="section section--white section--logistics">
+        <div class="container split split--logistics">
+          <div class="logistics-intro reveal">
             <p class="section__eyebrow">Логистика</p>
             <h2 class="section__title">Отгрузка и доставка по графику</h2>
             <p class="section__lead">
               Самовывоз со склада или доставка до вашего адреса по
               Санкт-Петербургу, Ленинградской области и регионам России.
             </p>
+            <a class="btn btn--dark" href="delivery.html">Доставка и оплата</a>
           </div>
-          <div class="steps reveal">
+          <div class="steps steps--list reveal">
             <article>
               <h3>Согласование</h3>
               <p>Размеры, материал, печать, тираж и срок — фиксируем в заявке.</p>
@@ -205,18 +222,32 @@
               <p>Отгрузка со склада или доставка транспортом до вашего объекта.</p>
             </article>
           </div>
-          <p style="margin-top: 2rem" class="reveal">
-            <a class="btn btn--dark" href="delivery.html">Доставка и оплата</a>
-          </p>
         </div>
       </section>
 
-      <section class="section section--paper" id="order">
+      <section class="section section--paper" id="order" data-fold-return>
         <div class="container" style="max-width: 720px">
           <div class="reveal" data-form-mount></div>
         </div>
       </section>
     </main>
+
+    <dialog class="product-modal" data-product-modal>
+      <button
+        type="button"
+        class="product-modal__close"
+        data-product-close
+        aria-label="Закрыть"
+      >
+        ×
+      </button>
+      <img class="product-modal__img" data-product-img alt="" width="640" height="480" />
+      <h3 class="product-modal__title" data-product-title></h3>
+      <p class="product-modal__desc" data-product-desc></p>
+      <a class="btn btn--primary product-modal__cta" href="#order" data-product-cta
+        >Оставить заявку</a
+      >
+    </dialog>
 
     <footer class="site-footer">
       <div class="container">

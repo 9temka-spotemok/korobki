@@ -56,14 +56,20 @@
         </div>
       </section>
 
-      <section class="section section--white">
+      <section class="section section--white section--products">
         <div class="container">
-          <div class="section-head reveal">
-            <p class="section__eyebrow">Ассортимент</p>
-            <h2 class="section__title">Типы изделий</h2>
-            <p class="section__lead">
-              Цену считаем под ваш размер, материал и объём заказа — без прайса
-              «от балды» на сайте.
+          <div class="products-statement reveal">
+            <h2 class="products-statement__title">
+              <span class="products-statement__line">Продукция</span>
+              <span
+                class="products-statement__line products-statement__line--accent"
+                >Типы гофроупаковки</span
+              >
+            </h2>
+            <p class="products-statement__lead">
+              Транспортная и потребительская тара для пищевой, аграрной,
+              кондитерской, алкогольной и химической промышленности, мебели и
+              техники.
             </p>
           </div>
           <div class="product-grid reveal" data-products-catalog></div>
@@ -93,6 +99,26 @@
         </div>
       </section>
     </main>
+
+    <dialog class="product-modal" data-product-modal>
+      <button
+        type="button"
+        class="product-modal__close"
+        data-product-close
+        aria-label="Закрыть"
+      >
+        ×
+      </button>
+      <img class="product-modal__img" data-product-img alt="" width="640" height="480" />
+      <h3 class="product-modal__title" data-product-title></h3>
+      <p class="product-modal__desc" data-product-desc></p>
+      <a
+        class="btn btn--primary product-modal__cta"
+        href="index.html#order"
+        data-product-cta
+        >Оставить заявку</a
+      >
+    </dialog>
 
     <footer class="site-footer">
       <div class="container">
