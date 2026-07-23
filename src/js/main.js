@@ -1,5 +1,9 @@
 import '../styles/main.css'
 import { productTypes, fefcoGroups, materials } from '../data/catalog.js'
+import {
+  pantoneDefaultFamily,
+  pantoneFamilies,
+} from '../data/pantone.js'
 import { leadFormHTML } from '../partials/shell.js'
 
 const CONTACTS = {
@@ -426,6 +430,169 @@ function initLeadForm() {
   })
 }
 
+function normalizePantoneQuery(raw) {
+  return String(raw)
+    .trim()
+    .replace(/^pantone\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .toUpperCase()
+}
+
+function initPrintDemo() {
+  const root = document.querySelector('[data-print-demo]')
+  if (!root) return
+
+  const familyRoot = root.querySelector('[data-print-demo-families]')
+  const slider = root.querySelector('[data-print-demo-slider]')
+  const shadeTrack = root.querySelector('[data-print-demo-shade-track]')
+  const codeInput = root.querySelector('[data-print-demo-code-input]')
+  const codeWrap = root.querySelector('.print-demo__code-wrap')
+  const render = root.querySelector('[data-print-render]')
+  if (!familyRoot || !slider || !codeInput || !render) return
+
+  let activeFamily = pantoneFamilies.find((f) => f.id === pantoneDefaultFamily)
+  if (!activeFamily) return
+
+  const shadeIndex = new Map()
+  pantoneFamilies.forEach((family) => {
+    family.shades.forEach((shade, index) => {
+      shadeIndex.set(normalizePantoneQuery(shade.code), { family, shade, index })
+    })
+  })
+
+  const resolveQuery = (raw) => {
+    const q = normalizePantoneQuery(raw)
+    if (!q) return null
+    const exact = shadeIndex.get(q)
+    if (exact) return exact
+    const withC = shadeIndex.get(`${q} C`)
+    if (withC) return withC
+    return null
+  }
+
+  const setCodeValid = (ok) => {
+    codeInput.classList.toggle('is-invalid', !ok)
+    if (codeWrap) codeWrap.classList.toggle('is-invalid', !ok)
+  }
+
+  const applyShade = (shade, { syncInput = true } = {}) => {
+    render.style.setProperty('--box-color', shade.hex)
+    slider.setAttribute('aria-valuetext', `PANTONE ${shade.code}`)
+    if (syncInput) codeInput.value = shade.code
+    setCodeValid(true)
+  }
+
+  const syncSlider = (family, index, { syncInput = true } = {}) => {
+    const max = family.shades.length - 1
+    const i = Math.min(Math.max(index, 0), max)
+    slider.min = '0'
+    slider.max = String(max)
+    slider.value = String(i)
+    if (shadeTrack) {
+      shadeTrack.style.background = `linear-gradient(90deg, ${family.shades
+        .map((s) => s.hex)
+        .join(', ')})`
+    }
+    applyShade(family.shades[i], { syncInput })
+  }
+
+  const highlightFamily = (family) => {
+    activeFamily = family
+    familyRoot.querySelectorAll('[data-pantone-family]').forEach((btn) => {
+      const on = btn.getAttribute('data-pantone-family') === family.id
+      btn.classList.toggle('is-active', on)
+      btn.setAttribute('aria-selected', String(on))
+    })
+  }
+
+  const defaultIndexInFamily = (family) => {
+    if (family.id === 'orange') {
+      return family.shades.findIndex((s) => s.code === 'Orange 021 C')
+    }
+    return Math.floor(family.shades.length / 2)
+  }
+
+  const setFamily = (family) => {
+    const index = defaultIndexInFamily(family)
+    if (index < 0) return
+    highlightFamily(family)
+    syncSlider(family, index)
+  }
+
+  const applyResolved = (hit) => {
+    highlightFamily(hit.family)
+    syncSlider(hit.family, hit.index)
+  }
+
+  familyRoot.innerHTML = pantoneFamilies
+    .map(
+      (family) => `
+      <button
+        type="button"
+        class="print-demo__family"
+        role="option"
+        data-pantone-family="${family.id}"
+        aria-selected="false"
+        aria-label="${family.label}"
+        title="${family.label}"
+        style="--swatch:${family.hex}"
+      ></button>`,
+    )
+    .join('')
+
+  familyRoot.querySelectorAll('[data-pantone-family]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-pantone-family')
+      const family = pantoneFamilies.find((item) => item.id === id)
+      if (!family) return
+      setFamily(family)
+    })
+  })
+
+  slider.addEventListener('input', () => {
+    const index = Number(slider.value)
+    const shade = activeFamily.shades[index]
+    if (!shade) return
+    applyShade(shade)
+  })
+
+  const tryApplyCode = () => {
+    const hit = resolveQuery(codeInput.value)
+    if (!hit) {
+      setCodeValid(false)
+      return
+    }
+    applyResolved(hit)
+  }
+
+  codeInput.addEventListener('input', () => {
+    codeInput.classList.remove('is-invalid')
+    if (codeWrap) codeWrap.classList.remove('is-invalid')
+    const hit = resolveQuery(codeInput.value)
+    if (hit) applyResolved(hit)
+  })
+
+  codeInput.addEventListener('change', tryApplyCode)
+  codeInput.addEventListener('blur', tryApplyCode)
+  codeInput.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return
+    event.preventDefault()
+    tryApplyCode()
+  })
+
+  root.querySelectorAll('[data-print-demo-code-example]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sample = btn.getAttribute('data-print-demo-code-example')
+      if (!sample) return
+      codeInput.value = sample
+      tryApplyCode()
+      codeInput.focus()
+    })
+  })
+
+  setFamily(activeFamily)
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-form-mount]').forEach((el) => {
     el.innerHTML = leadFormHTML
@@ -441,6 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReveal()
   initLeadForm()
   initProductModal()
+  initPrintDemo()
   initFoldDash()
 
   if (window.location.hash) {

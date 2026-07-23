@@ -67,15 +67,98 @@
               высокая тиражестойкость форм.
             </p>
           </div>
-          <figure class="print-pantone reveal">
-            <img
-              src="/images/pantone-guides.png"
-              alt="Каталоги цветов PANTONE Formula Guide — Solid Coated и Solid Uncoated"
-              width="1200"
-              height="800"
-              loading="lazy"
-            />
-          </figure>
+          <div class="print-demo reveal" data-print-demo>
+            <div class="print-demo__stage">
+              <div
+                class="print-demo__render"
+                data-print-render
+                style="--box-color: #fe5000"
+                role="img"
+                aria-label="Пример короба выбранного цвета PANTONE с логотипом БАЛТКАРТОН"
+              >
+                <img
+                  class="print-demo__photo"
+                  src="/images/print-box.png?v=3"
+                  alt=""
+                  width="740"
+                  height="518"
+                  loading="lazy"
+                />
+                <img
+                  class="print-demo__logo"
+                  src="/brand/logo-mark-light.png"
+                  alt=""
+                  width="120"
+                  height="135"
+                  decoding="async"
+                  aria-hidden="true"
+                />
+              </div>
+              <div class="print-demo__code-wrap">
+                <span class="print-demo__code-prefix" aria-hidden="true"
+                  >PANTONE</span
+                >
+                <input
+                  id="print-demo-code"
+                  class="print-demo__code-input"
+                  data-print-demo-code-input
+                  type="text"
+                  inputmode="text"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="694 C"
+                  value="Orange 021 C"
+                  aria-label="Номер цвета PANTONE"
+                />
+              </div>
+              <p class="print-demo__code-hint">
+                Можно ввести номер вручную — например
+                <button type="button" class="print-demo__code-example" data-print-demo-code-example="694 C">
+                  694&nbsp;C
+                </button>
+              </p>
+            </div>
+            <div
+              class="print-demo__families"
+              data-print-demo-families
+              role="listbox"
+              aria-label="Семейство цвета PANTONE"
+            ></div>
+            <div class="print-demo__shade">
+              <label class="print-demo__shade-label" for="print-demo-slider">
+                Оттенок в семье
+              </label>
+              <div
+                class="print-demo__shade-track"
+                data-print-demo-shade-track
+                aria-hidden="true"
+              ></div>
+              <input
+                id="print-demo-slider"
+                class="print-demo__slider"
+                data-print-demo-slider
+                type="range"
+                min="0"
+                max="1"
+                step="1"
+                value="0"
+                aria-valuetext=""
+              />
+            </div>
+            <p class="print-demo__note">
+              Выберите семейство, подвигайте ползунок или введите номер PANTONE.
+              Экранный пример — на гофре может отличаться от монитора.
+            </p>
+            <figure class="print-pantone">
+              <img
+                src="/images/pantone-guides.png"
+                alt="Каталоги цветов PANTONE Formula Guide — Solid Coated и Solid Uncoated"
+                width="1200"
+                height="800"
+                loading="lazy"
+              />
+            </figure>
+          </div>
         </div>
         <div class="container">
           <div class="feature-row feature-row--print reveal">

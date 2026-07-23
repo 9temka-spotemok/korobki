@@ -878,8 +878,205 @@ body.is-modal-open {
   color: rgba(255, 255, 255, 0.62);
 }
 
-.print-pantone {
+.print-demo {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.print-demo__stage {
+  display: grid;
+  justify-items: center;
+  gap: 0.65rem;
+}
+
+.print-demo__render {
+  --box-color: #fe5000;
+  position: relative;
+  width: min(100%, 560px);
+  aspect-ratio: 740 / 518;
+  isolation: isolate;
+  background: var(--box-color);
+  transition: background-color 0.3s var(--ease);
+  -webkit-mask-image: url('/images/print-box.png?v=3');
+  mask-image: url('/images/print-box.png?v=3');
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.print-demo__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.print-demo__logo {
+  position: absolute;
+  z-index: 1;
+  left: 73.6%;
+  top: 44.4%;
+  width: 13%;
+  height: auto;
+  aspect-ratio: 1205 / 1354;
+  object-fit: contain;
+  transform: translate(-50%, -50%) rotate(-36deg) skewX(-12deg) scaleY(0.68);
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+.print-demo__code-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  max-width: 100%;
+  padding: 0.35rem 0.75rem;
+  border: 2px dashed rgba(26, 26, 29, 0.28);
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.72);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.print-demo__code-wrap:focus-within {
+  border-color: var(--color-orange);
+  border-style: solid;
+  box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.18);
+}
+
+.print-demo__code-wrap.is-invalid {
+  border-color: #c8102e;
+  border-style: solid;
+}
+
+.print-demo__code-prefix {
+  font-family: var(--font-accent);
+  font-size: clamp(1.15rem, 3.2vw, 1.55rem);
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+  user-select: none;
+}
+
+.print-demo__code-input {
+  min-width: 7ch;
+  width: 11ch;
+  max-width: 16ch;
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-accent);
+  font-size: clamp(1.15rem, 3.2vw, 1.55rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  outline: none;
+}
+
+.print-demo__code-input::placeholder {
+  color: rgba(26, 26, 29, 0.28);
+  text-transform: uppercase;
+}
+
+.print-demo__code-input.is-invalid {
+  color: #c8102e;
+}
+
+.print-demo__code-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.print-demo__code-example {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dashed rgba(26, 26, 29, 0.45);
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.print-demo__code-example:hover {
+  color: var(--color-orange);
+  border-bottom-color: var(--color-orange);
+}
+
+.print-demo__families {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: center;
+}
+
+.print-demo__family {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 0.35rem;
+  background: var(--swatch);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(26, 26, 29, 0.12);
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.print-demo__family:hover {
+  transform: translateY(-2px);
+}
+
+.print-demo__family.is-active {
+  border-color: var(--color-ink);
+  transform: translateY(-2px);
+}
+
+.print-demo__shade {
+  display: grid;
+  gap: 0.4rem;
+  width: min(100%, 420px);
+  justify-self: center;
+}
+
+.print-demo__shade-label {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.print-demo__shade-track {
+  height: 0.65rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(26, 26, 29, 0.1);
+}
+
+.print-demo__slider {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--color-orange);
+  cursor: pointer;
+}
+
+.print-demo__note {
+  margin: 0;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--color-muted);
+  max-width: 42ch;
+  justify-self: center;
+}
+
+.print-pantone {
+  margin: 0.5rem 0 0;
   overflow: visible;
   background: transparent;
 }
@@ -1520,6 +1717,14 @@ body.is-modal-open {
 
   .form-panel {
     padding: 1.75rem 1.35rem;
+  }
+
+  .print-demo__render {
+    width: 100%;
+  }
+
+  .print-demo__logo {
+    width: 15%;
   }
 
   .print-pantone {

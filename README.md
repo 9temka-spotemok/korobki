@@ -33,7 +33,7 @@ npm run preview
 |---|---|
 | `index.html` | Главная: hero, «Почему», продукция (сетка + модалка), печать, логистика, форма |
 | `catalog.html` | Каталог: сетка типов + модалка, группы FEFCO |
-| `print.html` | Печать логотипов (флексо, PANTONE + фото каталогов) |
+| `print.html` | Печать логотипов (флексо, демо PANTONE на коробе, фото каталогов) |
 | `delivery.html` | Доставка, самовывоз, оплата |
 | `contacts.html` | Телефон, email, адрес, карта, форма |
 
@@ -43,10 +43,11 @@ npm run preview
 |---|---|
 | `vite.config.js` | Multi-page сборка Vite (все HTML-точки входа) |
 | `package.json` | Скрипты `dev` / `build` / `preview`, зависимости |
-| `src/js/main.js` | Навигация, меню, форма, reveal, `initFoldDash`, `renderProductList`, `initProductModal` |
+| `src/js/main.js` | Навигация, меню, форма, reveal, `initFoldDash`, `renderProductList`, `initProductModal`, `initPrintDemo` |
 | `src/partials/shell.js` | Разметка формы заявки (`.form-panel`, согласие `.form-consent`) и partials шапки/подвала |
 | `src/data/catalog.js` | Данные типов продукции, FEFCO-групп и материалов |
-| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.products-statement` + `.product-grid` (subgrid выравнивает названия); `.product-modal` |
+| `src/data/pantone.js` | Семейства PANTONE Color Bridge + оттенки для ползунка на `print.html` |
+| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.product-grid`; `.print-demo`; `.product-modal` |
 | `public/brand/` | Логотипы PNG и PDF брендбука |
 | `public/brand/logo-horizontal-light.png` | Горизонтальный логотип для тёмного фона (шапка/подвал) |
 | `public/brand/logo-horizontal-dark.png` | Горизонтальный логотип для светлого фона |
@@ -59,6 +60,9 @@ npm run preview
 | `public/images/production.jpg` | Фото производства для 2-го пункта блока «Почему» |
 | `public/images/print-flexo.png` | Макет печати до 3 цветов для 3-го пункта блока «Почему» |
 | `public/images/pantone-guides.png` | Каталоги PANTONE на странице `print.html` |
+| `public/images/print-box.png` | Демо печати: открытая + закрытая mailer (прозрачный фон) |
+| `public/images/print-logo-mark.png` | Монохромная маска знака БК |
+| `public/brand/logo-mark-light.png` | Знак БК в демо печати: оранжевый верх, белые буквы и пунктир |
 | `public/images/products/` | Фото типов упаковки (по `id` из `catalog.js`) |
 | `public/images/products/*.png` | Фото типов упаковки по `id` из `catalog.js` |
 
@@ -83,6 +87,16 @@ npm run preview
 | `initFoldDash()` в `main.js` | Координаты path; правый спуск у края main, минуя тексты колонок |
 
 Чтобы подключить файлы Tablon Black / Bebas Neue локально (если есть woff2 с кириллицей), положите их в `public/fonts/` и пропишите `@font-face` в `src/styles/main.css` для `--font-display` / `--font-accent`.
+
+## Демо печати (PANTONE)
+
+На `print.html` блок `.print-demo`: обе mailer в `print-box.png` + знак БК (`logo-mark-light.png`) на закрытой коробке. Выбор цвета: семейство → ползунок → или ввод номера (`PANTONE` + поле, напр. `694 C`). Каталог Pantone Color Bridge Coated (~1300 цветов), как на [colorscheme.ru/pantone-colors.html](https://colorscheme.ru/pantone-colors.html). `--box-color` красит короб (`mask-image` + `mix-blend-mode: multiply`). Логика — `initPrintDemo` в `main.js`.
+
+| Файл | Роль |
+|---|---|
+| `src/data/pantone.js` | `pantoneFamilies` / `pantoneDefaultFamily` — семейства и оттенки |
+| `scripts/build-pantone.py` | Пересборка `pantone.js` из Color Bridge JSON |
+| `scripts/pantone-p-color-bridge-coated.json` | Кэш исходного каталога для скрипта |
 
 ## Модалка продукции
 
