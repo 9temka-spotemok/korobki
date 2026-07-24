@@ -57,8 +57,8 @@
       </section>
 
       <section class="section section--white">
-        <div class="container split">
-          <div class="reveal">
+        <div class="container print-stack">
+          <div class="print-stack__intro reveal">
             <p class="section__eyebrow">Возможности</p>
             <h2 class="section__title">Упаковка как носитель бренда</h2>
             <p class="section__lead">
@@ -68,31 +68,180 @@
             </p>
           </div>
           <div class="print-demo reveal" data-print-demo>
+            <div class="print-demo__presets">
+              <div
+                class="print-demo__boxes"
+                data-print-demo-boxes
+                role="tablist"
+                aria-label="Макет короба"
+              >
+                <button
+                  type="button"
+                  class="print-demo__box-btn is-active"
+                  role="tab"
+                  aria-selected="true"
+                  data-print-box="pair"
+                >
+                  Гофроящик
+                </button>
+                <button
+                  type="button"
+                  class="print-demo__box-btn"
+                  role="tab"
+                  aria-selected="false"
+                  data-print-box="single"
+                >
+                  Пицца-бокс
+                </button>
+                <button
+                  type="button"
+                  class="print-demo__box-btn"
+                  role="tab"
+                  aria-selected="false"
+                  data-print-box="sheet"
+                >
+                  Лист картона
+                </button>
+              </div>
+              <div
+                class="print-demo__boards"
+                data-print-demo-boards
+                role="tablist"
+                aria-label="Материал картона"
+              >
+                <button
+                  type="button"
+                  class="print-demo__box-btn"
+                  role="tab"
+                  aria-selected="false"
+                  data-print-board="kraft"
+                  style="--board-swatch: #b79477"
+                >
+                  <span class="print-demo__board-swatch" aria-hidden="true"></span>
+                  Бурый
+                </button>
+                <button
+                  type="button"
+                  class="print-demo__box-btn is-active"
+                  role="tab"
+                  aria-selected="true"
+                  data-print-board="white"
+                  style="--board-swatch: #e9eae9"
+                >
+                  <span class="print-demo__board-swatch" aria-hidden="true"></span>
+                  Белый
+                </button>
+              </div>
+              <div
+                class="print-demo__artwork"
+                data-print-demo-artwork
+                role="tablist"
+                aria-label="Печать на коробе"
+              >
+                <button
+                  type="button"
+                  class="print-demo__box-btn is-active"
+                  role="tab"
+                  aria-selected="true"
+                  data-print-artwork="demo"
+                >
+                  Пример Pizza
+                </button>
+                <button
+                  type="button"
+                  class="print-demo__box-btn"
+                  role="tab"
+                  aria-selected="false"
+                  data-print-artwork="upload"
+                >
+                  Загрузить макет
+                </button>
+                <input
+                  class="print-demo__artwork-file"
+                  data-print-artwork-file
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  hidden
+                />
+              </div>
+              <p
+                class="print-demo__artwork-name"
+                data-print-artwork-name
+                hidden
+              ></p>
+            </div>
             <div class="print-demo__stage">
               <div
-                class="print-demo__render"
+                class="print-demo__render print-demo__render--3d"
                 data-print-render
-                style="--box-color: #fe5000"
-                role="img"
-                aria-label="Пример короба выбранного цвета PANTONE с логотипом БАЛТКАРТОН"
+                data-box="pair"
+                style="
+                  --box-color: #e9eae9;
+                  --logo-color-1: #006cb3;
+                  --logo-color-2: #2a2926;
+                  --logo-color-3: #ee7523;
+                "
               >
-                <img
-                  class="print-demo__photo"
-                  src="/images/print-box.png?v=3"
-                  alt=""
-                  width="740"
-                  height="518"
-                  loading="lazy"
-                />
-                <img
-                  class="print-demo__logo"
-                  src="/brand/logo-mark-light.png"
-                  alt=""
-                  width="120"
-                  height="135"
-                  decoding="async"
-                  aria-hidden="true"
-                />
+                <div
+                  class="print-demo__viewport"
+                  data-print-viewport
+                  role="img"
+                  aria-label="Интерактивная 3D-коробка с трёхкрасочным логотипом PANTONE. Крутите мышью, колёсико — зум."
+                ></div>
+                <p class="print-demo__hint">
+                  Крутите мышью · колёсико — зум · ПКМ — сдвиг
+                </p>
+              </div>
+              <div
+                class="print-demo__targets"
+                data-print-demo-targets
+                role="tablist"
+                aria-label="Что красим"
+              >
+                <button
+                  type="button"
+                  class="print-demo__target is-active"
+                  role="tab"
+                  aria-selected="true"
+                  data-print-target="box"
+                  style="--target-swatch: #e9eae9"
+                >
+                  <span class="print-demo__target-swatch" aria-hidden="true"></span>
+                  Короб
+                </button>
+                <button
+                  type="button"
+                  class="print-demo__target"
+                  role="tab"
+                  aria-selected="false"
+                  data-print-target="logo1"
+                  style="--target-swatch: #006cb3"
+                >
+                  <span class="print-demo__target-swatch" aria-hidden="true"></span>
+                  База
+                </button>
+                <button
+                  type="button"
+                  class="print-demo__target"
+                  role="tab"
+                  aria-selected="false"
+                  data-print-target="logo2"
+                  style="--target-swatch: #2a2926"
+                >
+                  <span class="print-demo__target-swatch" aria-hidden="true"></span>
+                  Текст
+                </button>
+                <button
+                  type="button"
+                  class="print-demo__target"
+                  role="tab"
+                  aria-selected="false"
+                  data-print-target="logo3"
+                  style="--target-swatch: #ee7523"
+                >
+                  <span class="print-demo__target-swatch" aria-hidden="true"></span>
+                  Контур
+                </button>
               </div>
               <div class="print-demo__code-wrap">
                 <span class="print-demo__code-prefix" aria-hidden="true"
@@ -107,13 +256,17 @@
                   autocomplete="off"
                   spellcheck="false"
                   placeholder="694 C"
-                  value="Orange 021 C"
-                  aria-label="Номер цвета PANTONE"
+                  value="Cool Gray 1 C"
+                  aria-label="Номер цвета PANTONE для выбранного слоя"
                 />
               </div>
               <p class="print-demo__code-hint">
-                Можно ввести номер вручную — например
-                <button type="button" class="print-demo__code-example" data-print-demo-code-example="694 C">
+                Слой выше → цвет ниже. Можно ввести номер, например
+                <button
+                  type="button"
+                  class="print-demo__code-example"
+                  data-print-demo-code-example="694 C"
+                >
                   694&nbsp;C
                 </button>
               </p>
@@ -146,18 +299,13 @@
               />
             </div>
             <p class="print-demo__note">
-              Выберите семейство, подвигайте ползунок или введите номер PANTONE.
-              Экранный пример — на гофре может отличаться от монитора.
+              Короб — одна краска; печать — до трёх (база, текст, контур).
+              Свой макет тоже разбирается на эти слои. На гофре оттенок может
+              отличаться.
             </p>
-            <figure class="print-pantone">
-              <img
-                src="/images/pantone-guides.png"
-                alt="Каталоги цветов PANTONE Formula Guide — Solid Coated и Solid Uncoated"
-                width="1200"
-                height="800"
-                loading="lazy"
-              />
-            </figure>
+            <div class="print-demo__cta">
+              <a class="btn btn--primary" href="contacts.html#order">Заказать макет</a>
+            </div>
           </div>
         </div>
         <div class="container">

@@ -1,9 +1,6 @@
 import '../styles/main.css'
 import { productTypes, fefcoGroups, materials } from '../data/catalog.js'
-import {
-  pantoneDefaultFamily,
-  pantoneFamilies,
-} from '../data/pantone.js'
+import { pantoneFamilies } from '../data/pantone.js'
 import { leadFormHTML } from '../partials/shell.js'
 
 const CONTACTS = {
@@ -48,12 +45,15 @@ function initFoldDash() {
     return n * period
   }
 
-  const desktopFold = window.matchMedia('(min-width: 961px)')
+  // Ниже ~1206px mark уходит под текст hero/«Почему» — пунктир сгиба не рисуем
+  const desktopFold = window.matchMedia('(min-width: 1206px)')
 
   const clearFold = () => {
     path.setAttribute('d', '')
     svg.setAttribute('width', '0')
     svg.setAttribute('height', '0')
+    const whySection = document.querySelector('.section--why')
+    if (whySection) whySection.style.removeProperty('--why-fold-max')
   }
 
   const update = () => {
@@ -99,6 +99,18 @@ function initFoldDash() {
 
     const xLeft = pad
     const xRight = width - pad
+
+    // Центрированные заголовки «Почему» не должны заходить под первую вертикаль сгиба
+    const whySection = document.querySelector('.section--why')
+    if (whySection) {
+      const centerX = containerRect.left + containerRect.width / 2
+      const maxW = Math.floor((foldX - TEXT_CLEAR - centerX) * 2)
+      if (maxW >= 220) {
+        whySection.style.setProperty('--why-fold-max', `${maxW}px`)
+      } else {
+        whySection.style.setProperty('--why-fold-max', 'min(100%, 36rem)')
+      }
+    }
 
     const yStart = gap
     const yCornerRaw = toY(stopRect.top + stopRect.height / 2)
@@ -210,7 +222,9 @@ function initNav() {
 
   const setOpen = (open) => {
     nav.classList.toggle('is-open', open)
+    toggle.classList.toggle('is-open', open)
     toggle.setAttribute('aria-expanded', String(open))
+    toggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню')
     document.body.classList.toggle('is-nav-open', open)
   }
 
@@ -438,7 +452,7 @@ function normalizePantoneQuery(raw) {
     .toUpperCase()
 }
 
-function initPrintDemo() {
+async function initPrintDemo() {
   const root = document.querySelector('[data-print-demo]')
   if (!root) return
 
@@ -448,41 +462,161 @@ function initPrintDemo() {
   const codeInput = root.querySelector('[data-print-demo-code-input]')
   const codeWrap = root.querySelector('.print-demo__code-wrap')
   const render = root.querySelector('[data-print-render]')
-  if (!familyRoot || !slider || !codeInput || !render) return
+  const viewport = root.querySelector('[data-print-viewport]')
+  const boxRoot = root.querySelector('[data-print-demo-boxes]')
+  const boardRoot = root.querySelector('[data-print-demo-boards]')
+  const artworkRoot = root.querySelector('[data-print-demo-artwork]')
+  const artworkFile = root.querySelector('[data-print-artwork-file]')
+  const artworkName = root.querySelector('[data-print-artwork-name]')
+  const targetRoot = root.querySelector('[data-print-demo-targets]')
+  if (
+    !familyRoot ||
+    !slider ||
+    !codeInput ||
+    !render ||
+    !viewport ||
+    !boxRoot ||
+    !boardRoot ||
+    !artworkRoot ||
+    !artworkFile ||
+    !artworkName ||
+    !targetRoot
+  )
+    return
 
-  let activeFamily = pantoneFamilies.find((f) => f.id === pantoneDefaultFamily)
-  if (!activeFamily) return
+  const { createPrintBox3D } = await import('./print-box-3d.js')
+  const box3d = createPrintBox3D(viewport)
 
-  const shadeIndex = new Map()
+  let artworkObjectUrl = null
+  /** @type {HTMLImageElement | null} */
+  let loadedArtwork = null
+
+  const revokeArtworkUrl = () => {
+    if (!artworkObjectUrl) return
+    URL.revokeObjectURL(artworkObjectUrl)
+    artworkObjectUrl = null
+  }
+
+  const shadeLookup = new Map()
   pantoneFamilies.forEach((family) => {
     family.shades.forEach((shade, index) => {
-      shadeIndex.set(normalizePantoneQuery(shade.code), { family, shade, index })
+      shadeLookup.set(normalizePantoneQuery(shade.code), {
+        family,
+        shade,
+        index,
+      })
     })
   })
 
   const resolveQuery = (raw) => {
     const q = normalizePantoneQuery(raw)
     if (!q) return null
-    const exact = shadeIndex.get(q)
-    if (exact) return exact
-    const withC = shadeIndex.get(`${q} C`)
-    if (withC) return withC
-    return null
+    return shadeLookup.get(q) || shadeLookup.get(`${q} C`) || null
   }
+
+  const requireShade = (code) => {
+    const hit = resolveQuery(code)
+    if (!hit) {
+      throw new Error(`PANTONE ${code} отсутствует в каталоге демо`)
+    }
+    return hit
+  }
+
+  // Бурый — точный цвет с эталона kraft (не Pantone): средний тон с референса.
+  const kraftBoardHex = '#B79477'
+  const kraftBoardHit = {
+    family: {
+      id: 'board-kraft',
+      label: 'Бурый картон',
+      hex: kraftBoardHex,
+      shades: [{ code: 'Бурый картон', hex: kraftBoardHex }],
+    },
+    shade: { code: 'Бурый картон', hex: kraftBoardHex },
+    index: 0,
+  }
+
+  const boardPresets = {
+    kraft: kraftBoardHit,
+    white: requireShade('Cool Gray 1 C'),
+  }
+
+  const targets = {
+    box: {
+      cssVar: '--box-color',
+      ...boardPresets.white,
+    },
+    logo1: {
+      cssVar: '--logo-color-1',
+      ...requireShade('2935 C'),
+    },
+    logo2: {
+      cssVar: '--logo-color-2',
+      ...requireShade('Black C'),
+    },
+    logo3: {
+      cssVar: '--logo-color-3',
+      ...requireShade('Orange 021 C'),
+    },
+  }
+
+  const syncBox3dColors = () => {
+    box3d.setColors({
+      box: targets.box.shade.hex,
+      logo1: targets.logo1.shade.hex,
+      logo2: targets.logo2.shade.hex,
+      logo3: targets.logo3.shade.hex,
+    })
+  }
+
+  const selectBox = (boxId) => {
+    render.dataset.box = boxId
+    boxRoot.querySelectorAll('[data-print-box]').forEach((btn) => {
+      const on = btn.getAttribute('data-print-box') === boxId
+      btn.classList.toggle('is-active', on)
+      btn.setAttribute('aria-selected', String(on))
+    })
+    box3d.setBoxType(boxId)
+  }
+
+  boxRoot.querySelectorAll('[data-print-box]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectBox(btn.getAttribute('data-print-box'))
+    })
+  })
+
+  let activeTargetId = 'box'
+  let activeFamily = targets.box.family
 
   const setCodeValid = (ok) => {
     codeInput.classList.toggle('is-invalid', !ok)
     if (codeWrap) codeWrap.classList.toggle('is-invalid', !ok)
   }
 
-  const applyShade = (shade, { syncInput = true } = {}) => {
-    render.style.setProperty('--box-color', shade.hex)
-    slider.setAttribute('aria-valuetext', `PANTONE ${shade.code}`)
-    if (syncInput) codeInput.value = shade.code
+  const paintTarget = (targetId, hit, { syncInput = true } = {}) => {
+    const target = targets[targetId]
+    target.family = hit.family
+    target.shade = hit.shade
+    target.index = hit.index
+    render.style.setProperty(target.cssVar, hit.shade.hex)
+    const btn = targetRoot.querySelector(`[data-print-target="${targetId}"]`)
+    if (btn) btn.style.setProperty('--target-swatch', hit.shade.hex)
+    syncBox3dColors()
+    if (targetId !== activeTargetId) return
+    activeFamily = hit.family
+    slider.setAttribute('aria-valuetext', `PANTONE ${hit.shade.code}`)
+    if (syncInput) codeInput.value = hit.shade.code
     setCodeValid(true)
   }
 
-  const syncSlider = (family, index, { syncInput = true } = {}) => {
+  const syncFamilyUi = (family) => {
+    familyRoot.querySelectorAll('[data-pantone-family]').forEach((btn) => {
+      const on = btn.getAttribute('data-pantone-family') === family.id
+      btn.classList.toggle('is-active', on)
+      btn.setAttribute('aria-selected', String(on))
+    })
+  }
+
+  const syncSliderUi = (family, index) => {
     const max = family.shades.length - 1
     const i = Math.min(Math.max(index, 0), max)
     slider.min = '0'
@@ -493,36 +627,107 @@ function initPrintDemo() {
         .map((s) => s.hex)
         .join(', ')})`
     }
-    applyShade(family.shades[i], { syncInput })
   }
 
-  const highlightFamily = (family) => {
-    activeFamily = family
-    familyRoot.querySelectorAll('[data-pantone-family]').forEach((btn) => {
-      const on = btn.getAttribute('data-pantone-family') === family.id
+  const selectTarget = (targetId) => {
+    const target = targets[targetId]
+    if (!target) return
+    activeTargetId = targetId
+    activeFamily = target.family
+    targetRoot.querySelectorAll('[data-print-target]').forEach((btn) => {
+      const on = btn.getAttribute('data-print-target') === targetId
       btn.classList.toggle('is-active', on)
       btn.setAttribute('aria-selected', String(on))
     })
+    syncFamilyUi(target.family)
+    syncSliderUi(target.family, target.index)
+    codeInput.value = target.shade.code
+    slider.setAttribute('aria-valuetext', `PANTONE ${target.shade.code}`)
+    setCodeValid(true)
   }
 
-  const defaultIndexInFamily = (family) => {
-    if (family.id === 'orange') {
-      return family.shades.findIndex((s) => s.code === 'Orange 021 C')
+  const applyHitToActive = (hit) => {
+    paintTarget(activeTargetId, hit)
+    syncFamilyUi(hit.family)
+    syncSliderUi(hit.family, hit.index)
+  }
+
+  const selectBoard = (boardId) => {
+    const hit = boardPresets[boardId]
+    if (!hit) return
+    boardRoot.querySelectorAll('[data-print-board]').forEach((btn) => {
+      const on = btn.getAttribute('data-print-board') === boardId
+      btn.classList.toggle('is-active', on)
+      btn.setAttribute('aria-selected', String(on))
+    })
+    paintTarget('box', hit, { syncInput: false })
+    selectTarget('box')
+  }
+
+  boardRoot.querySelectorAll('[data-print-board]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectBoard(btn.getAttribute('data-print-board'))
+    })
+  })
+
+  const setArtworkUi = (mode, fileName = '') => {
+    artworkRoot.querySelectorAll('[data-print-artwork]').forEach((btn) => {
+      const on = btn.getAttribute('data-print-artwork') === mode
+      btn.classList.toggle('is-active', on)
+      btn.setAttribute('aria-selected', String(on))
+    })
+    if (mode === 'upload' && fileName) {
+      artworkName.hidden = false
+      artworkName.textContent = fileName
+    } else {
+      artworkName.hidden = true
+      artworkName.textContent = ''
     }
-    return Math.floor(family.shades.length / 2)
   }
 
-  const setFamily = (family) => {
-    const index = defaultIndexInFamily(family)
-    if (index < 0) return
-    highlightFamily(family)
-    syncSlider(family, index)
+  const selectDemoArtwork = () => {
+    revokeArtworkUrl()
+    loadedArtwork = null
+    setArtworkUi('demo')
+    box3d.setArtwork(null)
+    selectTarget('box')
   }
 
-  const applyResolved = (hit) => {
-    highlightFamily(hit.family)
-    syncSlider(hit.family, hit.index)
+  const applyUploadedArtwork = (file) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      revokeArtworkUrl()
+      artworkObjectUrl = url
+      loadedArtwork = img
+      setArtworkUi('upload', file.name)
+      box3d.setArtwork(img)
+      selectTarget('box')
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      throw new Error('Не удалось прочитать файл макета')
+    }
+    img.src = url
   }
+
+  artworkRoot.querySelectorAll('[data-print-artwork]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mode = btn.getAttribute('data-print-artwork')
+      if (mode === 'demo') {
+        selectDemoArtwork()
+        return
+      }
+      artworkFile.click()
+    })
+  })
+
+  artworkFile.addEventListener('change', () => {
+    const file = artworkFile.files?.[0]
+    artworkFile.value = ''
+    if (!file) return
+    applyUploadedArtwork(file)
+  })
 
   familyRoot.innerHTML = pantoneFamilies
     .map(
@@ -540,12 +745,19 @@ function initPrintDemo() {
     )
     .join('')
 
+  targetRoot.querySelectorAll('[data-print-target]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectTarget(btn.getAttribute('data-print-target'))
+    })
+  })
+
   familyRoot.querySelectorAll('[data-pantone-family]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.getAttribute('data-pantone-family')
       const family = pantoneFamilies.find((item) => item.id === id)
       if (!family) return
-      setFamily(family)
+      const mid = Math.floor(family.shades.length / 2)
+      applyHitToActive({ family, shade: family.shades[mid], index: mid })
     })
   })
 
@@ -553,7 +765,7 @@ function initPrintDemo() {
     const index = Number(slider.value)
     const shade = activeFamily.shades[index]
     if (!shade) return
-    applyShade(shade)
+    applyHitToActive({ family: activeFamily, shade, index })
   })
 
   const tryApplyCode = () => {
@@ -562,14 +774,14 @@ function initPrintDemo() {
       setCodeValid(false)
       return
     }
-    applyResolved(hit)
+    applyHitToActive(hit)
   }
 
   codeInput.addEventListener('input', () => {
     codeInput.classList.remove('is-invalid')
     if (codeWrap) codeWrap.classList.remove('is-invalid')
     const hit = resolveQuery(codeInput.value)
-    if (hit) applyResolved(hit)
+    if (hit) applyHitToActive(hit)
   })
 
   codeInput.addEventListener('change', tryApplyCode)
@@ -590,7 +802,11 @@ function initPrintDemo() {
     })
   })
 
-  setFamily(activeFamily)
+  Object.keys(targets).forEach((id) => {
+    paintTarget(id, targets[id], { syncInput: false })
+  })
+  selectBox(render.dataset.box || 'pair')
+  selectTarget('box')
 }
 
 document.addEventListener('DOMContentLoaded', () => {

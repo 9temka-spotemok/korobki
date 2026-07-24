@@ -15,9 +15,11 @@ npm run dev
 
 | Ширина | Поведение |
 |---|---|
-| `>1100px` | Полное меню, сгиб от лого, сетка продукции 4 кол. |
+| `>1205px` | Hero: текст слева, mark справа + пунктир сгиба |
+| `>1100px` | Полное меню, сетка продукции 4 кол. |
+| `≤1205px` | Hero: текст сверху, mark снизу; без пунктира сгиба |
 | `≤1100px` | Бургер справа у CTA; выпадающее меню; контраст ссылок на тёмной панели |
-| `≤960px` | Без mark/сгиба; сплиты в 1 кол.; продукция 2 кол.; форма в 1 кол. |
+| `≤960px` | Сплиты в 1 кол.; продукция 2 кол.; форма в 1 кол.; mark компактнее |
 | `≤640px` | Продукция 1 кол.; кнопки hero на всю ширину; уплотнённые отступы |
 
 Сборка статики в `dist/`:
@@ -33,7 +35,7 @@ npm run preview
 |---|---|
 | `index.html` | Главная: hero, «Почему», продукция (сетка + модалка), печать, логистика, форма |
 | `catalog.html` | Каталог: сетка типов + модалка, группы FEFCO |
-| `print.html` | Печать логотипов (флексо, демо PANTONE на коробе, фото каталогов) |
+| `print.html` | Печать логотипов (флексо, демо PANTONE на коробе) |
 | `delivery.html` | Доставка, самовывоз, оплата |
 | `contacts.html` | Телефон, email, адрес, карта, форма |
 
@@ -42,12 +44,13 @@ npm run preview
 | Путь | За что отвечает |
 |---|---|
 | `vite.config.js` | Multi-page сборка Vite (все HTML-точки входа) |
-| `package.json` | Скрипты `dev` / `build` / `preview`, зависимости |
+| `package.json` | Скрипты `dev` / `build` / `preview`; зависимости: `vite`, `three` |
 | `src/js/main.js` | Навигация, меню, форма, reveal, `initFoldDash`, `renderProductList`, `initProductModal`, `initPrintDemo` |
+| `src/js/print-box-3d.js` | Three.js-сцена демо печати: короб, OrbitControls, текстуры Pantone/лого |
 | `src/partials/shell.js` | Разметка формы заявки (`.form-panel`, согласие `.form-consent`) и partials шапки/подвала |
 | `src/data/catalog.js` | Данные типов продукции, FEFCO-групп и материалов |
 | `src/data/pantone.js` | Семейства PANTONE Color Bridge + оттенки для ползунка на `print.html` |
-| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.product-grid`; `.print-demo`; `.product-modal` |
+| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.product-grid`; `.print-stack` / `.print-demo`; `.product-modal` |
 | `public/brand/` | Логотипы PNG и PDF брендбука |
 | `public/brand/logo-horizontal-light.png` | Горизонтальный логотип для тёмного фона (шапка/подвал) |
 | `public/brand/logo-horizontal-dark.png` | Горизонтальный логотип для светлого фона |
@@ -59,10 +62,7 @@ npm run preview
 | `public/images/corrugated.jpg` | Фото гофрокартона для 1-го пункта блока «Почему» |
 | `public/images/production.jpg` | Фото производства для 2-го пункта блока «Почему» |
 | `public/images/print-flexo.png` | Макет печати до 3 цветов для 3-го пункта блока «Почему» |
-| `public/images/pantone-guides.png` | Каталоги PANTONE на странице `print.html` |
-| `public/images/print-box.png` | Демо печати: открытая + закрытая mailer (прозрачный фон) |
-| `public/images/print-logo-mark.png` | Монохромная маска знака БК |
-| `public/brand/logo-mark-light.png` | Знак БК в демо печати: оранжевый верх, белые буквы и пунктир |
+| `public/images/print-logo-pizza.svg` | Исходник логотипа Pizza (3 слоя) для демо печати |
 | `public/images/products/` | Фото типов упаковки (по `id` из `catalog.js`) |
 | `public/images/products/*.png` | Фото типов упаковки по `id` из `catalog.js` |
 
@@ -84,17 +84,19 @@ npm run preview
 | `[data-fold-stop]` (`.why-fold-line`) | Верхняя горизонталь (под «Почему») |
 | `[data-fold-turn]` (`.section--print`) | Поворот вправо |
 | `[data-fold-return]` (`#order`) | Якорь секции заявки; вход пунктира в `.form-panel` |
-| `initFoldDash()` в `main.js` | Координаты path; правый спуск у края main, минуя тексты колонок |
+| `initFoldDash()` в `main.js` | Координаты path только при `min-width: 1206px`; `--why-fold-max` — зазоры у «Почему» |
 
 Чтобы подключить файлы Tablon Black / Bebas Neue локально (если есть woff2 с кириллицей), положите их в `public/fonts/` и пропишите `@font-face` в `src/styles/main.css` для `--font-display` / `--font-accent`.
 
 ## Демо печати (PANTONE)
 
-На `print.html` блок `.print-demo`: обе mailer в `print-box.png` + знак БК (`logo-mark-light.png`) на закрытой коробке. Выбор цвета: семейство → ползунок → или ввод номера (`PANTONE` + поле, напр. `694 C`). Каталог Pantone Color Bridge Coated (~1300 цветов), как на [colorscheme.ru/pantone-colors.html](https://colorscheme.ru/pantone-colors.html). `--box-color` красит короб (`mask-image` + `mix-blend-mode: multiply`). Логика — `initPrintDemo` в `main.js`.
+На `print.html` секция `.print-stack`: сверху текст, под ним `.print-demo`. **Интерактивная 3D-коробка** (Three.js + OrbitControls): крутить мышью, зум колёсиком, сдвиг ПКМ. Формы: **гофроящик** FEFCO 0201 / **пицца-бокс** / **лист картона** (два лайнера + гофр с видимой волной на торцах). Картон: **бурый** `#B79477` (эталон kraft) / **белый** Cool Gray 1 C. Логотип Pizza — 3 краски (canvas-текстура): крышка пицца-бокса, перед гофроящика или верх листа. Слоты «Короб / База / Текст / Контур» → семейство → ползунок / номер. Печать: **Пример Pizza** (3 краски) или **Загрузить макет** (PNG/JPEG/WebP/SVG; разбор на до 3 красок → слоты База/Текст/Контур, `analyzeArtworkLayers`). Кнопка **«Заказать макет»** (`.print-demo__cta`) → `contacts.html#order`. Логика UI — `initPrintDemo` в `main.js` (`setArtwork`); геометрии — `buildPizzaBox` / `buildRscBox` / `buildCardboardSheet` в `print-box-3d.js`.
 
 | Файл | Роль |
 |---|---|
-| `src/data/pantone.js` | `pantoneFamilies` / `pantoneDefaultFamily` — семейства и оттенки |
+| `src/data/pantone.js` | `pantoneFamilies` — семейства и оттенки |
+| `src/js/print-box-3d.js` | WebGL-сцена, геометрии короба, текстуры картона и лого |
+| `public/images/print-logo-pizza.svg` | Исходник логотипа Pizza (3 слоя); в 3D — SVG собирается в JS |
 | `scripts/build-pantone.py` | Пересборка `pantone.js` из Color Bridge JSON |
 | `scripts/pantone-p-color-bridge-coated.json` | Кэш исходного каталога для скрипта |
 

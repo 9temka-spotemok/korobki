@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" fill="none" aria-hidden="true">
+  <!--
+    5<>-;>3> Pizza, 3 :@0A:8:
+    1  1070 (AK@/A>CA), 2  B5:AB, 3  :>@:0 8 B>??8=38
+  -->
+  <g class="print-logo__base">
+    <circle cx="100" cy="92" r="64" fill="currentColor" />
+  </g>
+  <g class="print-logo__contour" fill="currentColor">
+    <!-- :>@:0 -->
+    <path
+      d="M100 22c-38.7 0-70 31.3-70 70s31.3 70 70 70 70-31.3 70-70-31.3-70-70-70zm0 14c31 0 56 25 56 56s-25 56-56 56-56-25-56-56 25-56 56-56z"
+      fill-rule="evenodd"
+    />
+    <!-- ;8=88 :CA:>2 -->
+    <path
+      d="M100 34v112M48 70l104 44M48 118l104-44"
+      stroke="currentColor"
+      stroke-width="3.2"
+      stroke-linecap="round"
+      fill="none"
+      opacity="0.85"
+    />
+    <!-- ?5??5@>=8 -->
+    <circle cx="78" cy="72" r="11" />
+    <circle cx="118" cy="64" r="9" />
+    <circle cx="128" cy="104" r="12" />
+    <circle cx="74" cy="112" r="8" />
+    <circle cx="100" cy="96" r="7" />
+    <!-- 3@81K -->
+    <path
+      d="M56 94c0-7 6-12 12-12s12 5 12 12v4H56v-4zm4 4h16v10c0 2-2 4-4 4h-8c-2 0-4-2-4-4V98z"
+    />
+    <path
+      d="M132 78c0-6 5-11 11-11s11 5 11 11v3h-22v-3zm3 3h16v9c0 2-2 3-3 3h-10c-2 0-3-1-3-3V81z"
+    />
+    <!-- 1078;8: -->
+    <path
+      d="M90 54c6-10 14-10 18-2 2 4 0 10-4 14-6 6-12 4-16-2-2-4-2-8 2-10z"
+    />
+    <path
+      d="M142 120c-8-6-8-14-2-18 4-2 10 0 14 4 6 6 4 12-2 16-4 2-8 2-10-2z"
+    />
+    <!-- >;82:8 -->
+    <ellipse cx="108" cy="128" rx="5" ry="3.5" transform="rotate(-20 108 128)" />
+    <ellipse cx="62" cy="80" rx="4.5" ry="3" transform="rotate(30 62 80)" />
+  </g>
+  <g class="print-logo__text" fill="currentColor">
+    <text
+      x="100"
+      y="210"
+      text-anchor="middle"
+      font-family="Oswald, Bebas Neue, Arial Black, sans-serif"
+      font-size="52"
+      font-weight="700"
+      letter-spacing="0.02em"
+    >PIZZA</text>
+    <rect x="42" y="220" width="116" height="8" rx="3" />
+    <!-- <5;:89 45:>@ C B5:AB0 -->
+    <path
+      d="M28 198c4-8 10-8 12-2 1 3-1 7-4 9-4 3-8 2-10-2-1-3 0-5 2-5z"
+    />
+    <circle cx="172" cy="204" r="4" />
+    <path
+      d="M160 188c6 2 10 8 8 12"
+      stroke="currentColor"
+      stroke-width="3"
+      stroke-linecap="round"
+      fill="none"
+    />
+  </g>
+</svg>
