@@ -16,6 +16,19 @@ export const headerHTML = `
         <a data-nav href="delivery.html">Доставка и оплата</a>
         <a data-nav href="contacts.html">Контакты</a>
       </nav>
+      <a
+        class="nav-tg"
+        href="https://t.me/Dmitry_an812"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Telegram @Dmitry_an812"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            d="M9.78 18.65l.28-4.23 7.68-6.93c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 14.5l-1.99 1.93c-.23.23-.42.42-.83.42z"
+          />
+        </svg>
+      </a>
       <a class="nav-cta" href="contacts.html#order">Заявка</a>
     </div>
   </header>
@@ -38,9 +51,11 @@ export const footerHTML = `
       <div class="site-footer__bottom">
         <span>© ${new Date().getFullYear()} БАЛТКАРТОН</span>
         <span>
-          <a data-phone href="tel:+79219401291">+7 (921) 940-12-91</a>
+          <a data-phone href="tel:+79319807119">+7 (931) 980-71-19</a>
           ·
-          <a data-email href="mailto:sales@piterpak-trade.ru">sales@piterpak-trade.ru</a>
+          <a data-phone-2 href="tel:+79301555462">+7 (930) 155-54-62</a>
+          ·
+          <a data-email href="mailto:sales@baltcarton.ru">sales@baltcarton.ru</a>
         </span>
       </div>
     </div>
@@ -50,7 +65,7 @@ export const footerHTML = `
 export const leadFormHTML = `
   <form class="form-panel" data-lead-form novalidate>
     <h2>Рассчитать тираж</h2>
-    <p>Оставьте контакты — подготовим предложение по размерам, материалу и печати.</p>
+    <p>Оставьте контакты — подготовим предложение по размерам, материалу и печати. Минимальный тираж — по согласованию.</p>
     <div class="form-grid">
       <div class="form-field">
         <label for="lead-name">Имя *</label>

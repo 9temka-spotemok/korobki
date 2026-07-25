@@ -1,16 +1,26 @@
 import '../styles/main.css'
-import { productTypes, fefcoGroups, materials } from '../data/catalog.js'
+import {
+  productTypes,
+  fefcoGroups,
+  boardTypes,
+  materials,
+} from '../data/catalog.js'
 import { pantoneFamilies } from '../data/pantone.js'
 import { leadFormHTML } from '../partials/shell.js'
 
 const CONTACTS = {
-  phone: '+7 (921) 940-12-91',
-  phoneHref: 'tel:+79219401291',
-  email: 'sales@piterpak-trade.ru',
-  emailHref: 'mailto:sales@piterpak-trade.ru',
-  address: 'Санкт-Петербург, м. Волковская, ул. Прогонная, 5',
+  phone: '+7 (931) 980-71-19',
+  phoneHref: 'tel:+79319807119',
+  phone2: '+7 (930) 155-54-62',
+  phone2Href: 'tel:+79301555462',
+  email: 'sales@baltcarton.ru',
+  emailHref: 'mailto:sales@baltcarton.ru',
+  telegram: '@Dmitry_an812',
+  telegramHref: 'https://t.me/Dmitry_an812',
+  addressOffice: 'г. СПб, ул. Домостроительная 18, БЦ Аурум',
+  addressProduction: 'г. Гатчина, ул. Индустриальная д.27',
   mapSrc:
-    'https://yandex.ru/map-widget/v1/?ll=30.3685%2C59.8975&z=16&pt=30.3685,59.8975,pm2rdm',
+    'https://yandex.ru/map-widget/v1/?ll=30.373334%2C60.073339&z=16&pt=30.373334,60.073339,pm2rdm',
 }
 
 function initFoldDash() {
@@ -45,8 +55,8 @@ function initFoldDash() {
     return n * period
   }
 
-  // Ниже ~1206px mark уходит под текст hero/«Почему» — пунктир сгиба не рисуем
-  const desktopFold = window.matchMedia('(min-width: 1206px)')
+  // Ниже ~1401px mark пересекается с текстом hero — пунктир сгиба не рисуем
+  const desktopFold = window.matchMedia('(min-width: 1401px)')
 
   const clearFold = () => {
     path.setAttribute('d', '')
@@ -377,6 +387,22 @@ function renderFefco(selector) {
     .join('')
 }
 
+function renderBoardTypes(selector) {
+  const root = document.querySelector(selector)
+  if (!root) return
+
+  root.innerHTML = boardTypes
+    .map(
+      (item) => `
+      <article class="board-item reveal" id="${item.id}">
+        <h3>${item.title}</h3>
+        <p>${item.description}</p>
+      </article>
+    `,
+    )
+    .join('')
+}
+
 function renderMaterials(selector) {
   const root = document.querySelector(selector)
   if (!root) return
@@ -388,12 +414,22 @@ function fillContactSlots() {
     el.textContent = CONTACTS.phone
     if (el.tagName === 'A') el.href = CONTACTS.phoneHref
   })
+  document.querySelectorAll('[data-phone-2]').forEach((el) => {
+    el.textContent = CONTACTS.phone2
+    if (el.tagName === 'A') el.href = CONTACTS.phone2Href
+  })
   document.querySelectorAll('[data-email]').forEach((el) => {
     el.textContent = CONTACTS.email
     if (el.tagName === 'A') el.href = CONTACTS.emailHref
   })
+  document.querySelectorAll('[data-telegram]').forEach((el) => {
+    el.textContent = CONTACTS.telegram
+    if (el.tagName === 'A') el.href = CONTACTS.telegramHref
+  })
   document.querySelectorAll('[data-address]').forEach((el) => {
-    el.textContent = CONTACTS.address
+    const kind = el.getAttribute('data-address')
+    el.textContent =
+      kind === 'production' ? CONTACTS.addressProduction : CONTACTS.addressOffice
   })
   document.querySelectorAll('[data-map]').forEach((el) => {
     el.src = CONTACTS.mapSrc
@@ -819,6 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fillContactSlots()
   renderProductList('[data-products-home]', { modal: true })
   renderProductList('[data-products-catalog]', { modal: true })
+  renderBoardTypes('[data-board-types]')
   renderFefco('[data-fefco]')
   renderMaterials('[data-materials]')
   initReveal()

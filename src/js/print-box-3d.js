@@ -40,9 +40,6 @@ function buildLogoSvg(color1, color2, color3) {
   <g fill="${color2}">
     <text x="100" y="210" text-anchor="middle" font-family="Oswald, Arial Black, sans-serif" font-size="52" font-weight="700" letter-spacing="0.02em">PIZZA</text>
     <rect x="42" y="220" width="116" height="8" rx="3"/>
-    <path d="M28 198c4-8 10-8 12-2 1 3-1 7-4 9-4 3-8 2-10-2-1-3 0-5 2-5z"/>
-    <circle cx="172" cy="204" r="4"/>
-    <path d="M160 188c6 2 10 8 8 12" stroke="${color2}" stroke-width="3" stroke-linecap="round" fill="none"/>
   </g>
 </svg>`
 }
