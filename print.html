@@ -83,100 +83,60 @@
           </div>
           <div class="print-demo reveal" data-print-demo>
             <div class="print-demo__presets">
-              <div
-                class="print-demo__boxes"
-                data-print-demo-boxes
-                role="tablist"
-                aria-label="Макет короба"
-              >
-                <button
-                  type="button"
-                  class="print-demo__box-btn is-active"
-                  role="tab"
-                  aria-selected="true"
-                  data-print-box="pair"
+              <div class="print-demo__controls">
+                <label class="print-demo__field">
+                  <span class="print-demo__field-label">Форма</span>
+                  <select
+                    class="print-demo__select"
+                    data-print-demo-boxes
+                    aria-label="Форма короба"
+                  >
+                    <option value="pair" selected>Гофроящик</option>
+                    <option value="single">Пицца-бокс</option>
+                    <option value="sheet">Лист картона</option>
+                  </select>
+                </label>
+                <label class="print-demo__field">
+                  <span class="print-demo__field-label">Картон</span>
+                  <select
+                    class="print-demo__select"
+                    data-print-demo-boards
+                    aria-label="Материал картона"
+                  >
+                    <option value="kraft" selected>Бурый</option>
+                    <option value="white">Белый</option>
+                  </select>
+                </label>
+                <div
+                  class="print-demo__artwork"
+                  data-print-demo-artwork
+                  role="group"
+                  aria-label="Печать на коробе"
                 >
-                  Гофроящик
-                </button>
-                <button
-                  type="button"
-                  class="print-demo__box-btn"
-                  role="tab"
-                  aria-selected="false"
-                  data-print-box="single"
-                >
-                  Пицца-бокс
-                </button>
-                <button
-                  type="button"
-                  class="print-demo__box-btn"
-                  role="tab"
-                  aria-selected="false"
-                  data-print-box="sheet"
-                >
-                  Лист картона
-                </button>
-              </div>
-              <div
-                class="print-demo__boards"
-                data-print-demo-boards
-                role="tablist"
-                aria-label="Материал картона"
-              >
-                <button
-                  type="button"
-                  class="print-demo__box-btn"
-                  role="tab"
-                  aria-selected="false"
-                  data-print-board="kraft"
-                  style="--board-swatch: #b79477"
-                >
-                  <span class="print-demo__board-swatch" aria-hidden="true"></span>
-                  Бурый
-                </button>
-                <button
-                  type="button"
-                  class="print-demo__box-btn is-active"
-                  role="tab"
-                  aria-selected="true"
-                  data-print-board="white"
-                  style="--board-swatch: #e9eae9"
-                >
-                  <span class="print-demo__board-swatch" aria-hidden="true"></span>
-                  Белый
-                </button>
-              </div>
-              <div
-                class="print-demo__artwork"
-                data-print-demo-artwork
-                role="tablist"
-                aria-label="Печать на коробе"
-              >
-                <button
-                  type="button"
-                  class="print-demo__box-btn is-active"
-                  role="tab"
-                  aria-selected="true"
-                  data-print-artwork="demo"
-                >
-                  Пример Pizza
-                </button>
-                <button
-                  type="button"
-                  class="print-demo__box-btn"
-                  role="tab"
-                  aria-selected="false"
-                  data-print-artwork="upload"
-                >
-                  Загрузить макет
-                </button>
-                <input
-                  class="print-demo__artwork-file"
-                  data-print-artwork-file
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  hidden
-                />
+                  <button
+                    type="button"
+                    class="print-demo__box-btn is-active"
+                    aria-pressed="true"
+                    data-print-artwork="demo"
+                  >
+                    Пример Pizza
+                  </button>
+                  <button
+                    type="button"
+                    class="print-demo__box-btn"
+                    aria-pressed="false"
+                    data-print-artwork="upload"
+                  >
+                    Загрузить макет
+                  </button>
+                  <input
+                    class="print-demo__artwork-file"
+                    data-print-artwork-file
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    hidden
+                  />
+                </div>
               </div>
               <p
                 class="print-demo__artwork-name"
@@ -190,7 +150,7 @@
                 data-print-render
                 data-box="pair"
                 style="
-                  --box-color: #e9eae9;
+                  --box-color: #b79477;
                   --logo-color-1: #006cb3;
                   --logo-color-2: #2a2926;
                   --logo-color-3: #ee7523;
@@ -218,7 +178,7 @@
                   role="tab"
                   aria-selected="true"
                   data-print-target="box"
-                  style="--target-swatch: #e9eae9"
+                  style="--target-swatch: #b79477"
                 >
                   <span class="print-demo__target-swatch" aria-hidden="true"></span>
                   Короб
@@ -270,7 +230,7 @@
                   autocomplete="off"
                   spellcheck="false"
                   placeholder="694 C"
-                  value="Cool Gray 1 C"
+                  value="Бурый картон"
                   aria-label="Номер цвета PANTONE для выбранного слоя"
                 />
               </div>

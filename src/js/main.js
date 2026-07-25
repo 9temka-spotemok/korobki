@@ -579,7 +579,7 @@ async function initPrintDemo() {
   const targets = {
     box: {
       cssVar: '--box-color',
-      ...boardPresets.white,
+      ...boardPresets.kraft,
     },
     logo1: {
       cssVar: '--logo-color-1',
@@ -605,19 +605,14 @@ async function initPrintDemo() {
   }
 
   const selectBox = (boxId) => {
+    if (!boxId) return
     render.dataset.box = boxId
-    boxRoot.querySelectorAll('[data-print-box]').forEach((btn) => {
-      const on = btn.getAttribute('data-print-box') === boxId
-      btn.classList.toggle('is-active', on)
-      btn.setAttribute('aria-selected', String(on))
-    })
+    boxRoot.value = boxId
     box3d.setBoxType(boxId)
   }
 
-  boxRoot.querySelectorAll('[data-print-box]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      selectBox(btn.getAttribute('data-print-box'))
-    })
+  boxRoot.addEventListener('change', () => {
+    selectBox(boxRoot.value)
   })
 
   let activeTargetId = 'box'
@@ -691,26 +686,20 @@ async function initPrintDemo() {
   const selectBoard = (boardId) => {
     const hit = boardPresets[boardId]
     if (!hit) return
-    boardRoot.querySelectorAll('[data-print-board]').forEach((btn) => {
-      const on = btn.getAttribute('data-print-board') === boardId
-      btn.classList.toggle('is-active', on)
-      btn.setAttribute('aria-selected', String(on))
-    })
+    boardRoot.value = boardId
     paintTarget('box', hit, { syncInput: false })
     selectTarget('box')
   }
 
-  boardRoot.querySelectorAll('[data-print-board]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      selectBoard(btn.getAttribute('data-print-board'))
-    })
+  boardRoot.addEventListener('change', () => {
+    selectBoard(boardRoot.value)
   })
 
   const setArtworkUi = (mode, fileName = '') => {
     artworkRoot.querySelectorAll('[data-print-artwork]').forEach((btn) => {
       const on = btn.getAttribute('data-print-artwork') === mode
       btn.classList.toggle('is-active', on)
-      btn.setAttribute('aria-selected', String(on))
+      btn.setAttribute('aria-pressed', String(on))
     })
     if (mode === 'upload' && fileName) {
       artworkName.hidden = false
@@ -842,7 +831,7 @@ async function initPrintDemo() {
     paintTarget(id, targets[id], { syncInput: false })
   })
   selectBox(render.dataset.box || 'pair')
-  selectTarget('box')
+  selectBoard('kraft')
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -853,7 +842,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeaderScroll()
   initNav()
   fillContactSlots()
-  renderProductList('[data-products-home]', { modal: true })
   renderProductList('[data-products-catalog]', { modal: true })
   renderBoardTypes('[data-board-types]')
   renderFefco('[data-fefco]')
