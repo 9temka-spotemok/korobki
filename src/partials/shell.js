@@ -3,7 +3,7 @@ export const headerHTML = `
   <header class="site-header">
     <div class="container site-header__inner">
       <a class="logo" href="index.html" aria-label="БАЛТКАРТОН — на главную">
-        <img class="logo__img--light" src="/brand/logo-horizontal-light.png" alt="БАЛТКАРТОН — производство картона" width="220" height="48" />
+        <img class="logo__img--light" src="/brand/logo-horizontal-light.png" alt="БАЛТКАРТОН — производство гофрокартона" width="220" height="48" />
         <img class="logo__img--dark" src="/brand/logo-horizontal-dark.png" alt="" width="220" height="48" aria-hidden="true" />
       </a>
       <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false">

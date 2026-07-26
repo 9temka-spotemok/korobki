@@ -23,6 +23,171 @@ const CONTACTS = {
     'https://yandex.ru/map-widget/v1/?ll=30.373334%2C60.073339&z=16&pt=30.373334,60.073339,pm2rdm',
 }
 
+function waitMs(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+async function typeHeroText(el, text, msPerChar = 26) {
+  el.textContent = ''
+  el.classList.add('hero-type-active')
+  for (let i = 0; i < text.length; i += 1) {
+    el.textContent += text[i]
+    await waitMs(msPerChar)
+  }
+  el.classList.remove('hero-type-active')
+}
+
+async function writeHeroCopy(hero) {
+  const nodes = [...hero.querySelectorAll('[data-hero-type]')]
+  const dash = hero.querySelector('[data-hero-dash]')
+  const actions = hero.querySelector('[data-hero-actions]')
+  const queue = nodes.map((el) => ({
+    el,
+    text: el.textContent.replace(/\s+/g, ' ').trimEnd(),
+  }))
+
+  // Полный текст на месте → замеряем финальную высоту блоков (чтобы на мобилке ничего не ползло).
+  // CTA не трогаем: is-in + transition давал вспышку кнопок в начале печати.
+  queue.forEach(({ el, text }) => {
+    el.textContent = text
+  })
+  if (dash) dash.hidden = false
+
+  hero.classList.add('hero--content-in', 'hero--measuring')
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  })
+
+  const blocks = [
+    hero.querySelector('.hero__brand'),
+    hero.querySelector('.hero__slogan'),
+    hero.querySelector('.hero h1'),
+    hero.querySelector('.hero__lead'),
+    actions,
+  ].filter(Boolean)
+
+  blocks.forEach((el) => {
+    el.style.minHeight = `${Math.ceil(el.getBoundingClientRect().height)}px`
+  })
+
+  queue.forEach(({ el }) => {
+    el.textContent = ''
+  })
+  if (dash) dash.hidden = true
+
+  hero.classList.remove('hero--measuring')
+  window.dispatchEvent(new Event('resize'))
+
+  for (const item of queue) {
+    // рыжий штрих слогана — между «Качество » и продолжением
+    if (dash && dash.hidden && item.el.previousElementSibling === dash) {
+      dash.hidden = false
+      await waitMs(90)
+    }
+    await typeHeroText(item.el, item.text, item.text.length > 40 ? 16 : 28)
+    await waitMs(140)
+  }
+
+  if (actions) actions.classList.add('is-in')
+}
+
+function initHeroIntro() {
+  const hero = document.querySelector('[data-hero]')
+  const mark = hero?.querySelector('.hero__mark-wrap')
+  if (!hero || !mark) return
+
+  const clearMarkMotion = () => {
+    mark.style.transition = ''
+    mark.style.transform = ''
+    mark.style.transformOrigin = ''
+  }
+
+  const finishInstant = () => {
+    hero.classList.remove('hero--intro', 'hero--settling')
+    hero.classList.add(
+      'hero--ready',
+      'hero--phase-letters',
+      'hero--phase-top',
+      'hero--phase-dashes',
+      'hero--content-in',
+    )
+    const dash = hero.querySelector('[data-hero-dash]')
+    const actions = hero.querySelector('[data-hero-actions]')
+    if (dash) dash.hidden = false
+    if (actions) actions.classList.add('is-in')
+    clearMarkMotion()
+    window.dispatchEvent(new Event('resize'))
+  }
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    finishInstant()
+    return
+  }
+
+  const DOCK_MS = 900
+  const later = (fn, ms) => window.setTimeout(fn, ms)
+  const stackedHero = window.matchMedia('(max-width: 1400px)').matches
+
+  // 1) Б и К
+  hero.classList.add('hero--phase-letters')
+  // 2) рыжий верх
+  later(() => hero.classList.add('hero--phase-top'), 520)
+  // 3) пунктиры сгиба в лого
+  later(() => hero.classList.add('hero--phase-dashes'), 980)
+  // 4) уезжает на место → 5) текст печатается по очереди
+  later(() => {
+    // ≤1400px: без FLIP — контент ещё absolute, «последняя» позиция mark была бы сверху пустого hero
+    if (stackedHero) {
+      hero.classList.add('hero--ready')
+      hero.classList.remove('hero--intro', 'hero--settling')
+      clearMarkMotion()
+      writeHeroCopy(hero)
+      return
+    }
+
+    const first = mark.getBoundingClientRect()
+    hero.classList.add('hero--settling', 'hero--ready')
+    hero.classList.remove('hero--intro')
+
+    const last = mark.getBoundingClientRect()
+    const dx = first.left - last.left
+    const dy = first.top - last.top
+    const sx = first.width / Math.max(last.width, 1)
+    const sy = first.height / Math.max(last.height, 1)
+
+    mark.style.transformOrigin = 'top left'
+    mark.style.transition = 'none'
+    mark.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        mark.style.transition = `transform ${DOCK_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`
+        mark.style.transform = 'translate(0, 0) scale(1)'
+
+        let started = false
+        const startTyping = () => {
+          if (started) return
+          started = true
+          clearMarkMotion()
+          hero.classList.remove('hero--settling')
+          writeHeroCopy(hero)
+        }
+
+        const onEnd = (event) => {
+          if (event.target !== mark || event.propertyName !== 'transform') return
+          mark.removeEventListener('transitionend', onEnd)
+          startTyping()
+        }
+        mark.addEventListener('transitionend', onEnd)
+        later(() => {
+          mark.removeEventListener('transitionend', onEnd)
+          startTyping()
+        }, DOCK_MS + 100)
+      })
+    })
+  }, 1750)
+}
+
 function initFoldDash() {
   const svg = document.querySelector('.fold-svg')
   const path = document.querySelector('.fold-svg__path')
@@ -41,6 +206,7 @@ function initFoldDash() {
   const SIDE_OUTSET = 28
   const RIGHT_INSET = 14
   const TEXT_CLEAR = 28
+  const MASK_ID = 'fold-dash-reveal'
 
   const snapLen = (len, period, dash) => {
     const mod = ((len % period) + period) % period
@@ -57,9 +223,64 @@ function initFoldDash() {
 
   // Ниже ~1401px mark пересекается с текстом hero — пунктир сгиба не рисуем
   const desktopFold = window.matchMedia('(min-width: 1401px)')
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+  let pathLength = 0
+  // Прогресс только растёт: доскроллили до конца — пунктир остаётся при скролле вверх
+  let maxReveal = 0
+
+  const ensureRevealMask = () => {
+    let reveal = svg.querySelector('.fold-svg__reveal')
+    if (reveal) return reveal
+
+    const ns = 'http://www.w3.org/2000/svg'
+    const defs = document.createElementNS(ns, 'defs')
+    const mask = document.createElementNS(ns, 'mask')
+    mask.setAttribute('id', MASK_ID)
+    mask.setAttribute('maskUnits', 'userSpaceOnUse')
+    mask.setAttribute('maskContentUnits', 'userSpaceOnUse')
+    reveal = document.createElementNS(ns, 'path')
+    reveal.setAttribute('class', 'fold-svg__reveal')
+    reveal.setAttribute('fill', 'none')
+    reveal.setAttribute('stroke', '#fff')
+    reveal.setAttribute('stroke-linecap', 'butt')
+    reveal.setAttribute('stroke-linejoin', 'miter')
+    mask.appendChild(reveal)
+    defs.appendChild(mask)
+    svg.insertBefore(defs, path)
+    path.setAttribute('mask', `url(#${MASK_ID})`)
+    return reveal
+  }
+
+  const applyReveal = () => {
+    const reveal = svg.querySelector('.fold-svg__reveal')
+    if (!reveal || !pathLength || !desktopFold.matches) return
+
+    if (reduceMotion.matches) {
+      maxReveal = 1
+      reveal.setAttribute('stroke-dasharray', String(pathLength))
+      reveal.setAttribute('stroke-dashoffset', '0')
+      return
+    }
+
+    const form = document.querySelector('[data-lead-form]') || ret
+    const markBottom = mark.getBoundingClientRect().bottom
+    const formTop = form.getBoundingClientRect().top
+    const viewH = window.innerHeight
+    // 0 — низ лого у середины экрана; 1 — линия дошла до формы
+    const start = markBottom - viewH * 0.52
+    const end = formTop - viewH * 0.38
+    const progress = Math.min(1, Math.max(0, (0 - start) / Math.max(1, end - start)))
+    maxReveal = Math.max(maxReveal, progress)
+
+    reveal.setAttribute('stroke-dasharray', String(pathLength))
+    reveal.setAttribute('stroke-dashoffset', String(pathLength * (1 - maxReveal)))
+  }
 
   const clearFold = () => {
     path.setAttribute('d', '')
+    pathLength = 0
+    const reveal = svg.querySelector('.fold-svg__reveal')
+    if (reveal) reveal.setAttribute('d', '')
     svg.setAttribute('width', '0')
     svg.setAttribute('height', '0')
     const whySection = document.querySelector('.section--why')
@@ -155,10 +376,8 @@ function initFoldDash() {
     svg.setAttribute('height', String(height))
     svg.setAttribute('overflow', 'visible')
 
-    path.setAttribute(
-      'd',
-      `M ${xFold} ${yStart} L ${xFold} ${yCorner} L ${xLeft} ${yCorner} L ${xLeft} ${yTurn} L ${xDrop} ${yTurn} L ${xDrop} ${yCube} L ${xCube} ${yCube}`,
-    )
+    const d = `M ${xFold} ${yStart} L ${xFold} ${yCorner} L ${xLeft} ${yCorner} L ${xLeft} ${yTurn} L ${xDrop} ${yTurn} L ${xDrop} ${yCube} L ${xCube} ${yCube}`
+    path.setAttribute('d', d)
     path.setAttribute('stroke', '#ff5a1f')
     path.setAttribute('stroke-width', String(thickness))
     path.setAttribute('stroke-dasharray', `${dash} ${gap}`)
@@ -166,14 +385,31 @@ function initFoldDash() {
     path.setAttribute('stroke-linecap', 'butt')
     path.setAttribute('stroke-linejoin', 'miter')
     path.setAttribute('shape-rendering', 'geometricPrecision')
+
+    const reveal = ensureRevealMask()
+    reveal.setAttribute('d', d)
+    reveal.setAttribute('stroke-width', String(thickness * 2.4))
+    pathLength = path.getTotalLength()
+    applyReveal()
   }
 
   const schedule = () => requestAnimationFrame(() => requestAnimationFrame(update))
 
+  let revealTick = 0
+  const scheduleReveal = () => {
+    if (revealTick) return
+    revealTick = requestAnimationFrame(() => {
+      revealTick = 0
+      applyReveal()
+    })
+  }
+
   schedule()
   window.addEventListener('resize', schedule)
   window.addEventListener('load', schedule)
+  window.addEventListener('scroll', scheduleReveal, { passive: true })
   desktopFold.addEventListener('change', schedule)
+  reduceMotion.addEventListener('change', scheduleReveal)
   mark.addEventListener('animationend', schedule)
   if (document.fonts?.ready) document.fonts.ready.then(schedule)
   const img = mark.querySelector('img')
@@ -486,6 +722,169 @@ function normalizePantoneQuery(raw) {
     .replace(/^pantone\s+/i, '')
     .replace(/\s+/g, ' ')
     .toUpperCase()
+}
+
+function initBrandSelects(scope = document) {
+  const selects = [...scope.querySelectorAll('select.print-demo__select, select[data-brand-select]')]
+  if (!selects.length) return
+
+  const closeAll = (except) => {
+    selects.forEach((select) => {
+      const ui = select.closest('.brand-select')
+      if (!ui || ui === except) return
+      ui.classList.remove('is-open')
+      const list = ui.querySelector('.brand-select__list')
+      const trigger = ui.querySelector('.brand-select__trigger')
+      if (list) list.hidden = true
+      if (trigger) trigger.setAttribute('aria-expanded', 'false')
+    })
+  }
+
+  selects.forEach((select) => {
+    if (select.dataset.brandSelectReady === '1') return
+    select.dataset.brandSelectReady = '1'
+
+    const wrap = document.createElement('div')
+    wrap.className = 'brand-select'
+    select.parentNode.insertBefore(wrap, select)
+    wrap.appendChild(select)
+    select.classList.add('brand-select__native')
+
+    const trigger = document.createElement('button')
+    trigger.type = 'button'
+    trigger.className = 'brand-select__trigger'
+    trigger.setAttribute('aria-haspopup', 'listbox')
+    trigger.setAttribute('aria-expanded', 'false')
+    if (select.id) trigger.id = `${select.id}-trigger`
+    const labelBy = select.getAttribute('aria-label')
+    if (labelBy) trigger.setAttribute('aria-label', labelBy)
+
+    const valueEl = document.createElement('span')
+    valueEl.className = 'brand-select__value'
+    const caret = document.createElement('span')
+    caret.className = 'brand-select__caret'
+    caret.setAttribute('aria-hidden', 'true')
+    trigger.append(valueEl, caret)
+
+    const list = document.createElement('ul')
+    list.className = 'brand-select__list'
+    list.setAttribute('role', 'listbox')
+    list.hidden = true
+
+    wrap.append(trigger, list)
+
+    const syncFromNative = () => {
+      const selected = select.selectedOptions[0]
+      valueEl.textContent = selected ? selected.textContent : ''
+      list.querySelectorAll('.brand-select__option').forEach((btn) => {
+        const on = btn.dataset.value === select.value
+        btn.classList.toggle('is-active', on)
+        btn.setAttribute('aria-selected', String(on))
+      })
+    }
+
+    const rebuildOptions = () => {
+      list.replaceChildren(
+        ...[...select.options].map((opt) => {
+          const li = document.createElement('li')
+          li.setAttribute('role', 'presentation')
+          const btn = document.createElement('button')
+          btn.type = 'button'
+          btn.className = 'brand-select__option'
+          btn.setAttribute('role', 'option')
+          btn.dataset.value = opt.value
+          btn.textContent = opt.textContent
+          btn.disabled = opt.disabled
+          btn.addEventListener('click', () => {
+            if (select.value !== opt.value) {
+              select.value = opt.value
+              select.dispatchEvent(new Event('change', { bubbles: true }))
+            }
+            closeAll()
+            trigger.focus()
+          })
+          li.appendChild(btn)
+          return li
+        }),
+      )
+      syncFromNative()
+    }
+
+    const open = () => {
+      closeAll(wrap)
+      rebuildOptions()
+      wrap.classList.add('is-open')
+      list.hidden = false
+      trigger.setAttribute('aria-expanded', 'true')
+    }
+
+    const close = () => {
+      wrap.classList.remove('is-open')
+      list.hidden = true
+      trigger.setAttribute('aria-expanded', 'false')
+    }
+
+    trigger.addEventListener('click', () => {
+      if (wrap.classList.contains('is-open')) close()
+      else open()
+    })
+
+    trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        if (!wrap.classList.contains('is-open')) open()
+        const active = list.querySelector('.brand-select__option.is-active') || list.querySelector('.brand-select__option')
+        active?.focus()
+      }
+    })
+
+    list.addEventListener('keydown', (event) => {
+      const options = [...list.querySelectorAll('.brand-select__option:not(:disabled)')]
+      const i = options.indexOf(document.activeElement)
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        close()
+        trigger.focus()
+        return
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        options[Math.min(options.length - 1, i + 1)]?.focus()
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        options[Math.max(0, i - 1)]?.focus()
+      }
+    })
+
+    select.addEventListener('change', syncFromNative)
+
+    const valueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')
+    Object.defineProperty(select, 'value', {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return valueDesc.get.call(this)
+      },
+      set(next) {
+        valueDesc.set.call(this, next)
+        syncFromNative()
+      },
+    })
+
+    rebuildOptions()
+  })
+
+  if (!initBrandSelects._bound) {
+    initBrandSelects._bound = true
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('.brand-select')) return
+      closeAll()
+    })
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeAll()
+    })
+  }
 }
 
 async function initPrintDemo() {
@@ -849,7 +1248,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initReveal()
   initLeadForm()
   initProductModal()
+  initBrandSelects()
   initPrintDemo()
+  initHeroIntro()
   initFoldDash()
 
   if (window.location.hash) {

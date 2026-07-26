@@ -17,7 +17,7 @@
           <img
             class="logo__img--light"
             src="/brand/logo-horizontal-light.png"
-            alt="БАЛТКАРТОН — производство картона"
+            alt="БАЛТКАРТОН — производство гофрокартона"
             width="220"
             height="48"
           />
@@ -58,16 +58,40 @@
     </header>
 
     <main class="site-main">
-      <section class="hero">
+      <section class="hero hero--intro" data-hero>
         <div class="hero__bg" aria-hidden="true"></div>
         <div class="hero__mark-wrap" aria-hidden="true">
-          <img
-            class="hero__mark"
-            src="/brand/logo-mark-light.png"
-            alt=""
-            width="520"
-            height="584"
-          />
+          <span class="hero__mark-glow" aria-hidden="true"></span>
+          <div class="hero__mark-stack">
+            <img
+              class="hero__mark-layer hero__mark-layer--b"
+              src="/brand/mark-layers/letter-b.png"
+              alt=""
+              width="1205"
+              height="1354"
+            />
+            <img
+              class="hero__mark-layer hero__mark-layer--k"
+              src="/brand/mark-layers/letter-k.png"
+              alt=""
+              width="1205"
+              height="1354"
+            />
+            <img
+              class="hero__mark-layer hero__mark-layer--top"
+              src="/brand/mark-layers/top.png"
+              alt=""
+              width="1205"
+              height="1354"
+            />
+            <img
+              class="hero__mark-layer hero__mark-layer--dashes"
+              src="/brand/mark-layers/dashes.png"
+              alt=""
+              width="1205"
+              height="1354"
+            />
+          </div>
           <!-- U-сгиб в том же боксе, что лого: left% = ось белого пунктира -->
           <svg class="fold-svg" aria-hidden="true">
             <path
@@ -80,20 +104,23 @@
         </div>
         <div class="container hero__content">
           <p class="hero__brand">
-            <span class="hero__brand-name">БАЛТКАРТОН</span>
-            <span class="hero__brand-tag">Производство картона</span>
+            <span class="hero__brand-name" data-hero-type>БАЛТКАРТОН</span>
+            <span class="hero__brand-tag" data-hero-type>Производство гофрокартона</span>
           </p>
           <p class="hero__slogan">
-            Качество <span class="hero__slogan-dash" aria-hidden="true"></span>
-            это когда возвращается клиент, а не продукция
+            <span data-hero-type>Качество </span
+            ><span class="hero__slogan-dash" data-hero-dash aria-hidden="true"></span
+            ><span data-hero-type
+              > это когда возвращается клиент, а не продукция</span
+            >
           </p>
-          <h1>Гофротара и упаковка под ваш продукт</h1>
-          <p class="hero__lead">
+          <h1 data-hero-type>Гофротара и упаковка под ваш продукт</h1>
+          <p class="hero__lead" data-hero-type>
             Стандартные конструкции FEFCO и индивидуальные размеры. Печать до трёх
             цветов. Минимальный тираж — по согласованию. Поставки по
             Санкт-Петербургу, ЛО и всей России.
           </p>
-          <div class="btn-group">
+          <div class="btn-group" data-hero-actions>
             <a class="btn btn--primary" href="#order">Рассчитать тираж</a>
             <a class="btn btn--ghost" href="catalog.html">Смотреть каталог</a>
           </div>
