@@ -64,7 +64,28 @@ def save_layer(mask, name, use_source_color=True, fill=None):
     print(name, int(mask.sum()))
 
 
+# Оранжевый верх — две прямоугольные створки (в изометрии параллелограммы).
+# Режем не по диагонали ромба (треугольники), а через середины сторон.
+# Углы ромба (из маски): T/R/B/L.
+_t = np.array([601.0, 0.0])
+_r = np.array([1167.0, 325.0])
+_b = np.array([602.0, 651.0])
+_l = np.array([41.0, 326.0])
+_m_tl = (_t + _l) / 2
+_m_br = (_b + _r) / 2
+_seam = _m_br - _m_tl
+_oy, _ox = np.where(orange)
+_cross = (_ox - _m_tl[0]) * _seam[1] - (_oy - _m_tl[1]) * _seam[0]
+orange_l = np.zeros_like(orange)
+orange_r = np.zeros_like(orange)
+orange_l[_oy[_cross < 0], _ox[_cross < 0]] = True
+orange_r[_oy[_cross >= 0], _ox[_cross >= 0]] = True
+orange_l &= orange
+orange_r &= orange
+
 save_layer(orange, 'top.png')
+save_layer(orange_l, 'top-left.png')
+save_layer(orange_r, 'top-right.png')
 save_layer(left, 'letter-b.png')
 save_layer(right, 'letter-k.png')
 save_layer(dashes, 'dashes.png')

@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600;700&family=Unbounded:wght@700;800;900&display=swap');
-
 :root {
   --color-orange: #ff5a1f;
   --color-orange-hover: #e84e18;
@@ -359,6 +357,7 @@ select {
   z-index: 2;
   min-height: 100svh;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   background: var(--color-black);
   color: var(--color-white);
@@ -378,15 +377,22 @@ select {
   overflow: hidden;
   border-radius: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 70% 40%, rgba(255, 90, 31, 0.22), transparent 55%),
-    linear-gradient(135deg, #1a1a1d 0%, #0e0e10 45%, #241812 100%),
-    repeating-linear-gradient(
-      -35deg,
-      transparent,
-      transparent 14px,
-      rgba(255, 255, 255, 0.02) 14px,
-      rgba(255, 255, 255, 0.02) 15px
-    );
+    radial-gradient(ellipse 70% 55% at 72% 42%, rgba(255, 90, 31, 0.2), transparent 58%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.045) 1px, transparent 0),
+    linear-gradient(145deg, #121214 0%, #0a0a0c 48%, #1a120e 100%);
+  background-size:
+    auto,
+    22px 22px,
+    auto;
+}
+
+.hero__bg-arcs {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.95;
 }
 
 .hero__bg::after {
@@ -394,8 +400,8 @@ select {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to top, rgba(26, 26, 29, 0.95) 0%, transparent 45%),
-    linear-gradient(to right, rgba(26, 26, 29, 0.75) 0%, transparent 60%);
+    linear-gradient(to top, rgba(10, 10, 12, 0.72) 0%, transparent 42%),
+    linear-gradient(to right, rgba(10, 10, 12, 0.55) 0%, transparent 58%);
 }
 
 .hero__mark-wrap {
@@ -408,6 +414,25 @@ select {
   width: min(42vw, 480px);
   z-index: 0;
   overflow: visible;
+}
+
+.hero__impact {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 4;
+  width: 55%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 90, 31, 0.85) 0%,
+    rgba(255, 90, 31, 0.25) 38%,
+    transparent 68%
+  );
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
 }
 
 .hero__mark-glow {
@@ -427,10 +452,13 @@ select {
 
 .hero__mark-stack {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   aspect-ratio: 1205 / 1354;
-  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.45));
+  /* filter на стеке ломает preserve-3d — тень на слоях, не здесь */
+  perspective: 1100px;
+  perspective-origin: 50% 70%;
+  transform-style: preserve-3d;
 }
 
 .hero__mark-layer {
@@ -442,50 +470,104 @@ select {
   object-fit: contain;
   opacity: 0;
   will-change: transform, opacity, clip-path;
+  transform-style: preserve-3d;
 }
 
-/* ——— Hero intro: слои лого → центр → место справа → текст ——— */
+.hero__mark-layer--b,
+.hero__mark-layer--k {
+  backface-visibility: hidden;
+  filter: drop-shadow(0 22px 40px rgba(0, 0, 0, 0.4));
+}
+
+/* у пунктира без drop-shadow — иначе тёмная «грязь» ложится на оранжевые крышки */
+.hero__mark-layer--dashes {
+  filter: none;
+}
+
+/* ——— Hero intro 1+4: тёмный кадр, удар Б+К, вспышка, dock ——— */
 .hero--intro,
 .hero--settling {
   min-height: 100svh;
   overflow: hidden;
 }
 
+.hero--intro .hero__bg {
+  background: #0a0a0c;
+}
+
+.hero--intro .hero__bg::after {
+  background: radial-gradient(
+    ellipse 50% 45% at 50% 48%,
+    rgba(255, 90, 31, 0.08),
+    transparent 70%
+  );
+}
+
 .hero--intro .hero__mark-wrap {
   left: 50%;
   right: auto;
   top: 50%;
-  width: min(54vw, 500px);
+  width: min(72vw, 560px);
   z-index: 3;
   transform: translate(-50%, -50%);
 }
 
-.hero--intro .fold-svg {
+/* рыжий fold — только когда лого уже на финальном месте (не во время FLIP) */
+.hero--intro .fold-svg,
+.hero--docking .fold-svg {
   visibility: hidden;
 }
 
-.hero--intro .hero__mark-stack {
-  filter: drop-shadow(0 40px 80px rgba(0, 0, 0, 0.55));
+.hero--intro .hero__mark-layer--b,
+.hero--intro .hero__mark-layer--k {
+  filter: drop-shadow(0 28px 70px rgba(0, 0, 0, 0.65));
 }
 
 .hero--phase-letters .hero__mark-layer--b {
-  animation: heroLayerB 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: heroSlamB 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero--phase-letters .hero__mark-layer--k {
-  animation: heroLayerK 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  animation: heroSlamK 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+.hero--inplace.hero--phase-letters .hero__mark-layer--b {
+  animation: heroInPlaceB 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero--inplace.hero--phase-letters .hero__mark-layer--k {
+  animation: heroInPlaceK 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+
+.hero--inplace .hero__impact {
+  display: none;
+}
+
+.hero--phase-impact .hero__impact {
+  animation: heroImpact 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero--phase-impact .hero__mark-stack {
+  animation: heroMarkKick 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* цельный оранжевый верх — падает сверху */
 .hero--phase-top .hero__mark-layer--top {
-  animation: heroLayerTop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: heroLayerTop 0.7s cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 
 .hero--phase-top .hero__mark-glow {
-  animation: heroGlow 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: heroGlow 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .hero--phase-dashes .hero__mark-layer--dashes {
-  animation: heroLayerDashes 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: heroLayerDashes 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero__mark-layer--top {
+  opacity: 0;
+  z-index: 3;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
 }
 
 .hero--ready .hero__mark-layer--b,
@@ -493,9 +575,9 @@ select {
 .hero--ready .hero__mark-layer--top,
 .hero--ready .hero__mark-layer--dashes {
   opacity: 1;
-  transform: none;
   clip-path: none;
   animation: none;
+  transform: none;
 }
 
 .hero--ready .hero__mark-glow {
@@ -504,11 +586,19 @@ select {
   animation: none;
 }
 
-.hero:not(.hero--content-in) .hero__content {
-  position: absolute;
+.hero--ready .hero__impact {
   opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  animation: none;
+}
+
+/* скрытие текста до intro — только десктоп; на мобилке иначе белый/пустой кадр до JS */
+@media (min-width: 1401px) {
+  .hero:not(.hero--content-in) .hero__content {
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 .hero--content-in .hero__content {
@@ -518,51 +608,58 @@ select {
   pointer-events: auto;
 }
 
-/* замер финальной высоты текста: место занято, на экране ещё не видно */
-.hero--measuring .hero__content {
+/* только opacity — translateY на десктопе мылил/«плавил» текст */
+.hero--content-in .hero-reveal {
   opacity: 0;
-  pointer-events: none;
 }
 
-.hero--content-in .hero__slogan-dash[hidden],
-.hero .hero__slogan-dash[hidden] {
-  display: none;
-}
-
-.hero--content-in [data-hero-actions] {
-  opacity: 0;
-  transform: translateY(12px);
-}
-
-.hero--content-in [data-hero-actions].is-in {
+.hero--content-in .hero-reveal.is-in {
   opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.45s var(--ease),
-    transform 0.45s var(--ease);
+  transition: opacity 0.55s var(--ease);
 }
 
-.hero-type-active::after {
-  content: '';
-  display: inline-block;
-  width: 0.09em;
-  height: 0.82em;
-  margin-left: 0.06em;
-  vertical-align: -0.06em;
-  background: var(--color-orange);
-  animation: heroCaret 0.7s step-end infinite;
-}
-
-@keyframes heroCaret {
-  50% {
-    opacity: 0;
+@media (max-width: 1400px) {
+  .hero--content-in .hero-reveal,
+  .hero--content-in .hero-reveal.is-in {
+    opacity: 1;
+    transition: none;
   }
 }
 
-@keyframes heroLayerB {
+@keyframes heroSlamB {
+  0% {
+    opacity: 0.9;
+    transform: translateX(-48vw) scale(1.08);
+  }
+  72% {
+    opacity: 1;
+    transform: translateX(1.6%) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes heroSlamK {
+  0% {
+    opacity: 0.9;
+    transform: translateX(48vw) scale(1.08);
+  }
+  72% {
+    opacity: 1;
+    transform: translateX(-1.6%) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes heroInPlaceB {
   from {
     opacity: 0;
-    transform: translate(-12%, 8%) scale(0.92);
+    transform: translate(-8%, 6%) scale(0.94);
   }
   to {
     opacity: 1;
@@ -570,23 +667,54 @@ select {
   }
 }
 
-@keyframes heroLayerK {
+@keyframes heroInPlaceK {
   from {
     opacity: 0;
-    transform: translate(12%, 8%) scale(0.92);
+    transform: translate(8%, 6%) scale(0.94);
   }
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes heroImpact {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  28% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.85);
+  }
+}
+
+@keyframes heroMarkKick {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.045);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
 @keyframes heroLayerTop {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(-18%) scale(0.88);
+    transform: translateY(-55%) scale(0.88);
   }
-  to {
+  70% {
+    opacity: 1;
+    transform: translateY(3%) scale(1.02);
+  }
+  100% {
     opacity: 1;
     transform: none;
   }
@@ -608,12 +736,12 @@ select {
     opacity: 0;
     transform: scale(0.55);
   }
-  45% {
-    opacity: 1;
-    transform: scale(1.15);
+  40% {
+    opacity: 0.95;
+    transform: scale(1.2);
   }
   100% {
-    opacity: 0.45;
+    opacity: 0.4;
     transform: scale(1);
   }
 }
@@ -623,11 +751,16 @@ select {
   .hero__mark-layer--k,
   .hero__mark-layer--top,
   .hero__mark-layer--dashes,
-  .hero__mark-glow {
+  .hero__mark-glow,
+  .hero__impact {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
+  }
+
+  .hero__impact {
+    opacity: 0 !important;
   }
 }
 
@@ -650,19 +783,26 @@ select {
 .hero__content {
   position: relative;
   z-index: 1;
+  max-width: 640px;
+}
+
+.hero__content--main {
+  padding: 0;
+}
+
+.hero__content--foot {
   padding: 0 0 3rem;
-  max-width: 720px;
 }
 
 .hero__brand {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
 }
 
 .hero__brand-name {
   display: block;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: clamp(2.4rem, 7vw, 4.25rem);
+  font-size: clamp(2.2rem, 5.5vw, 3.6rem);
   line-height: 0.95;
   letter-spacing: -0.03em;
   color: var(--color-orange);
@@ -671,51 +811,100 @@ select {
 
 .hero__brand-tag {
   display: block;
-  margin-top: 0.55rem;
+  margin-top: 0.45rem;
   font-family: var(--font-accent);
   font-weight: 500;
-  font-size: clamp(1rem, 2.2vw, 1.35rem);
-  letter-spacing: 0.18em;
+  font-size: clamp(0.92rem, 1.7vw, 1.15rem);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.62);
 }
 
-.hero__slogan {
-  margin: 0 0 1.15rem;
-  max-width: 18ch;
+.hero__title {
+  margin: 0 0 1.5rem;
+  max-width: 16ch;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.85rem, 4.8vw, 3.15rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.7rem, 3.8vw, 2.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
   color: var(--color-white);
 }
 
-.hero__slogan-dash {
-  display: inline-block;
-  width: 0.55em;
-  height: 0.12em;
-  margin: 0 0.12em;
-  vertical-align: 0.12em;
-  background: var(--color-orange);
-  border-radius: 1px;
+.hero__points {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+  margin: 0 0 1.35rem;
+  padding: 0;
+  list-style: none;
+  max-width: 38rem;
 }
 
-.hero h1 {
-  margin: 8.5rem 0 1rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.35rem, 3.2vw, 2.1rem);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.9);
+.hero__point {
+  display: grid;
+  justify-items: start;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.hero__point-icon {
+  display: grid;
+  place-items: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  color: var(--color-orange);
+}
+
+.hero__point-icon svg {
+  width: 2.55rem;
+  height: 2.55rem;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* «Качественные материалы» — 2 строки только на мобилке */
+.hero__point-br {
+  display: none;
 }
 
 .hero__lead {
-  margin: 0 0 2rem;
-  max-width: 34ch;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 1.75rem;
+  max-width: 42ch;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/* десктоп: бренд/заголовок сверху слева; лид+кнопки — снизу слева */
+@media (min-width: 1401px) {
+  .hero {
+    min-height: 100svh;
+    padding-bottom: 2.5rem;
+    box-sizing: border-box;
+  }
+
+  .hero__content--main {
+    max-width: 640px;
+  }
+
+  .hero__content--foot {
+    margin-top: auto;
+    max-width: 640px;
+    padding-bottom: 0;
+  }
+}
+
+.hero .btn {
+  border-radius: 999px;
+  min-height: 3rem;
+  padding-inline: 1.45rem;
+}
+
+.hero .btn--ghost {
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 @keyframes heroIn {
@@ -2136,6 +2325,11 @@ body.is-modal-open {
 
 /* ——— Tablet / mobile ——— */
 @media (max-width: 1100px) {
+  /* pill + padding шапки реально ~90px; заниженный --header-h прятал бренд под меню */
+  :root {
+    --header-h: 96px;
+  }
+
   .menu-toggle {
     display: block;
     order: 2;
@@ -2216,74 +2410,86 @@ body.is-modal-open {
 }
 
 @media (max-width: 1400px) {
-  /* текст сверху, mark снизу; без наложения */
-  .hero {
+  /* main → mark → foot (лого между иконками и лидом).
+     intro и inplace совпадают по геометрии — иначе до JS контент «прыгает». */
+  .hero,
+  .hero.hero--intro,
+  .hero.hero--inplace {
     flex-direction: column;
     align-items: stretch;
     min-height: auto;
     padding-bottom: 2.5rem;
-  }
-
-  /* иначе min-height: auto выше схлопывает intro (оба слоя absolute) */
-  .hero.hero--intro,
-  .hero.hero--settling {
-    min-height: 100svh;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .hero > .container {
-    order: 1;
     margin-left: auto;
     margin-right: auto;
     width: min(100% - 2rem, var(--container));
   }
 
   .hero__content {
-    order: 1;
     max-width: 100%;
-    padding-bottom: 1.25rem;
     text-align: center;
   }
 
-  .hero__slogan,
-  .hero__lead {
+  .hero__content--main {
+    padding-bottom: 0.5rem;
+  }
+
+  .hero__content--foot {
+    padding-top: 0.75rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .hero__title,
+  .hero__lead,
+  .hero__points {
     margin-left: auto;
     margin-right: auto;
   }
 
-  .hero h1 {
-    margin-top: 1.75rem;
+  .hero__points {
+    justify-items: center;
+  }
+
+  .hero__point {
+    justify-items: center;
+    text-align: center;
   }
 
   .hero .btn-group {
     justify-content: center;
   }
 
-  .hero__mark-wrap {
-    order: 2;
+  .hero__mark-wrap,
+  .hero--intro .hero__mark-wrap,
+  .hero--inplace .hero__mark-wrap {
     position: relative;
+    left: auto;
     right: auto;
     top: auto;
     width: min(56vw, 360px);
-    margin: 1.5rem auto 0;
+    margin: 1.25rem auto;
+    transform: none;
     z-index: 1;
   }
 
-  .hero--intro .hero__mark-wrap {
-    position: absolute;
-    left: 50%;
-    right: auto;
-    top: 50%;
-    order: unset;
-    margin: 0;
-    width: min(62vw, 380px);
-    transform: translate(-50%, -50%);
-    z-index: 3;
+  .hero--intro .hero__bg {
+    background:
+      radial-gradient(ellipse 70% 55% at 72% 42%, rgba(255, 90, 31, 0.2), transparent 58%),
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.045) 1px, transparent 0),
+      linear-gradient(145deg, #121214 0%, #0a0a0c 48%, #1a120e 100%);
+    background-size:
+      auto,
+      22px 22px,
+      auto;
   }
 
-  /* во время FLIP mark уже в потоке снизу; высота экрана держит hero--settling */
-  .hero--settling .hero__mark-wrap {
-    z-index: 3;
+  .hero--intro .hero__bg::after {
+    background:
+      linear-gradient(to top, rgba(10, 10, 12, 0.72) 0%, transparent 42%),
+      linear-gradient(to right, rgba(10, 10, 12, 0.55) 0%, transparent 58%);
   }
 
   .fold-svg {
@@ -2292,25 +2498,133 @@ body.is-modal-open {
 }
 
 @media (max-width: 960px) {
-  .hero {
-    padding-top: calc(var(--header-h) + 1.25rem);
-    padding-bottom: 3rem;
+  /* весь hero в 1 экран — сразу, в т.ч. до смены intro → inplace */
+  .hero,
+  .hero.hero--intro,
+  .hero.hero--inplace {
+    box-sizing: border-box;
+    min-height: 100svh;
+    max-height: 100svh;
+    height: 100svh;
+    padding-top: calc(var(--header-h) + 0.75rem);
+    padding-bottom: 0.85rem;
+    overflow: hidden;
+    justify-content: space-between;
   }
 
   .hero__content {
-    padding: 0 0 1rem;
+    padding: 0;
   }
 
-  .hero__mark-wrap {
-    width: min(70vw, 300px);
+  .hero__content--main {
+    padding-bottom: 0;
+    flex: 0 0 auto;
+  }
+
+  .hero__content--foot {
+    padding: 0;
+    flex: 0 0 auto;
   }
 
   .hero__brand {
-    font-size: clamp(2.4rem, 10vw, 3.4rem);
+    margin: 0 0 0.55rem;
   }
 
-  .hero h1 {
-    font-size: clamp(1.85rem, 6.5vw, 2.6rem);
+  .hero__brand-name {
+    font-size: clamp(1.85rem, 7.5vw, 2.35rem);
+  }
+
+  .hero__brand-tag {
+    margin-top: 0.25rem;
+    font-size: clamp(0.78rem, 3vw, 0.9rem);
+    letter-spacing: 0.14em;
+  }
+
+  .hero__title {
+    margin: 0 auto 0.75rem;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    max-width: 20ch;
+    text-wrap: balance;
+  }
+
+  .hero__points {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 0.75rem;
+    margin: 0 auto;
+    max-width: 21rem;
+  }
+
+  .hero__point {
+    gap: 0.3rem;
+    font-size: 0.74rem;
+    line-height: 1.25;
+  }
+
+  .hero__point-br {
+    display: inline;
+  }
+
+  .hero__point-icon {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
+
+  .hero__point-icon svg {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .hero__mark-wrap,
+  .hero--intro .hero__mark-wrap,
+  .hero--inplace .hero__mark-wrap {
+    width: 100%;
+    margin: 0.2rem auto;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    max-height: 36svh;
+    overflow: visible;
+  }
+
+  .hero__mark-stack {
+    width: min(52vw, 248px);
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1205 / 1354;
+    height: auto;
+    perspective: 1000px;
+    perspective-origin: 50% 30%;
+    transform-style: preserve-3d;
+    overflow: visible;
+  }
+
+  .hero__lead {
+    margin: 0 auto 0.75rem;
+    max-width: 34ch;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .hero .btn-group {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .hero .btn-group .btn,
+  .hero .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 2.65rem;
+    padding-inline: 0.85rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
   }
 
   .btn-group {
@@ -2391,7 +2705,7 @@ body.is-modal-open {
 
 @media (max-width: 640px) {
   :root {
-    --header-h: 72px;
+    --header-h: 100px;
   }
 
   .container {
@@ -2409,13 +2723,44 @@ body.is-modal-open {
     letter-spacing: 0.06em;
   }
 
-  .hero {
-    padding-top: calc(var(--header-h) + 0.85rem);
-    padding-bottom: 2.5rem;
+  .hero,
+  .hero.hero--intro,
+  .hero.hero--inplace {
+    padding-top: calc(var(--header-h) + 0.55rem);
+    padding-bottom: 0.65rem;
   }
 
-  .hero__content {
-    padding: 0 0 0.5rem;
+  .hero__brand {
+    margin-top: 0.15rem;
+  }
+
+  .hero__brand-name {
+    font-size: clamp(1.7rem, 7vw, 2.1rem);
+  }
+
+  .hero__title {
+    font-size: 1.28rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .hero__mark-wrap,
+  .hero--intro .hero__mark-wrap,
+  .hero--inplace .hero__mark-wrap {
+    max-height: 32svh;
+  }
+
+  .hero__mark-stack {
+    width: min(50vw, 220px);
+  }
+
+  .hero__lead {
+    font-size: 0.84rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .hero .btn {
+    min-height: 2.45rem;
+    font-size: 0.84rem;
   }
 
   .btn-group {
@@ -2424,6 +2769,15 @@ body.is-modal-open {
 
   .btn-group .btn {
     width: 100%;
+  }
+
+  .hero .btn-group {
+    flex-direction: row;
+  }
+
+  .hero .btn-group .btn {
+    width: auto;
+    flex: 1 1 0;
   }
 
   .why-statement {
@@ -2468,16 +2822,52 @@ body.is-modal-open {
   }
 }
 
-@media (max-width: 640px) and (max-height: 720px) {
-  .hero {
-    min-height: auto;
+@media (max-width: 960px) and (max-height: 740px) {
+  .hero__brand-name {
+    font-size: 1.55rem;
   }
 
-  .hero__brand {
-    margin-bottom: 1rem;
+  .hero__title {
+    font-size: 1.15rem;
+    margin-bottom: 0.4rem;
   }
 
-  .hero h1 {
-    margin-bottom: 0.75rem;
+  .hero__points {
+    gap: 0.4rem 0.5rem;
+    max-width: 19rem;
+  }
+
+  .hero__point {
+    font-size: 0.68rem;
+  }
+
+  .hero__point-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .hero__point-icon svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  .hero__mark-wrap,
+  .hero--intro .hero__mark-wrap,
+  .hero--inplace .hero__mark-wrap {
+    max-height: 28svh;
+  }
+
+  .hero__mark-stack {
+    width: min(44vw, 190px);
+  }
+
+  .hero__lead {
+    font-size: 0.78rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .hero .btn {
+    min-height: 2.25rem;
+    font-size: 0.8rem;
   }
 }

@@ -50,7 +50,9 @@ npm run preview
 | `src/partials/shell.js` | Разметка формы заявки (`.form-panel`, согласие `.form-consent`) и partials шапки/подвала |
 | `src/data/catalog.js` | Типы продукции (в т.ч. крупногабарит, овощные/мясные лотки), FEFCO, `materials`, `boardTypes` (Т-21–Т-27, П-31–П-37, Z-картон); минимальный тираж — по согласованию |
 | `src/data/pantone.js` | Семейства PANTONE Color Bridge + оттенки для ползунка на `print.html` |
-| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.product-grid`; `.print-stack` / `.print-demo`; `.brand-select`; `.product-modal` |
+| `src/styles/main.css` | Токены бренда, сетка, hero, секции, форма, адаптив; `.fold-svg`; `.product-grid`; `.print-stack` / `.print-demo`; `.brand-select`; `.product-modal`. Подключается из `<head>` каждой HTML (не только из JS — иначе FOUC) |
+| `src/styles/fonts.css` | Локальные `@font-face` (Unbounded / Oswald / Manrope), `font-display: block` — без смены начертания после load |
+| `public/fonts/*.woff2` | Файлы шрифтов (cyrillic / latin); preload кириллицы в `<head>` |
 | `public/brand/` | Логотипы PNG и PDF брендбука |
 | `public/brand/logo-horizontal-light.png` | Горизонтальный логотип для тёмного фона (шапка/подвал) |
 | `public/brand/logo-horizontal-dark.png` | Горизонтальный логотип для светлого фона |
@@ -58,8 +60,8 @@ npm run preview
 | `public/brand/logo-stacked-dark.png` | Основная версия на светлом |
 | `public/brand/logo-mark-light.png` | Исходный символ БК (полная сборка) |
 | `public/brand/logo-mark-dark.png` | Символ БК для светлого фона |
-| `public/brand/mark-layers/` | Слои intro: `letter-b`, `letter-k`, `top`, `dashes` |
-| `scripts/split-logo-mark.py` | Нарезка `logo-mark-light.png` на слои intro |
+| `public/brand/mark-layers/` | Слои intro: `letter-b`, `letter-k`, `top` (цельный оранжевый верх), `dashes` |
+| `scripts/split-logo-mark.py` | Нарезка `logo-mark-light.png` на слои; оранжевый ромб режется через середины сторон (не по диагонали — иначе треугольники) |
 | `public/brand/baltkarton-brand.pdf` | PDF с логотипом |
 | `public/images/corrugated.jpg` | Фото гофрокартона для 1-го пункта блока «Почему» |
 | `public/images/production.jpg` | Фото производства для 2-го пункта блока «Почему» |
@@ -73,11 +75,11 @@ npm run preview
 - **Оранжевый:** `#ff5a1f`
 - **Чёрный:** `#1a1a1d`
 - **Шрифты в макете:** Tablon Black, Bebas Neue Bold
-- **На сайте:** hero — `logo-mark-light.png`; оранжевый сгиб — один SVG L-path (см. ниже); шапка — стекло/белая подложка; заголовки — Unbounded; акценты — Oswald; текст — Manrope
+- **На сайте:** hero — `logo-mark-light.png`; оранжевый сгиб — один SVG L-path (см. ниже); шапка — стекло/белая подложка; заголовки — Unbounded; акценты — Oswald; текст — Manrope (локально в `public/fonts`, не Google CDN — иначе FOUT: текст сначала системный, потом «другой»)
 
 ### Hero intro (главная)
 
-На первом экране сборка логотипа БК по слоям (по центру): **Б** и **К** → рыжий верх → пунктиры сгиба → на десктопе FLIP вправо (`hero--settling`), на ≤1400px сразу раскладка «текст + mark снизу» → `writeHeroCopy` резервирует `min-height` (`hero--measuring`), затем печатает (`[data-hero-type]`) → CTA. На мобилке/планшете `.hero--intro` держит `min-height: 100svh` (иначе при `min-height: auto` absolute-слои схлопывают hero и крупный БК перекрывает «Почему»). Слои: `public/brand/mark-layers/`; нарезка — `scripts/split-logo-mark.py`. Старт с `hero--intro` на `[data-hero]`; фазы — `hero--phase-letters|top|dashes`; логика — `initHeroIntro()` в `main.js`. При `prefers-reduced-motion: reduce` intro пропускается.
+Hero-макет: `.hero__content--main` → `.hero__mark-wrap` → `.hero__content--foot`. Десктоп: intro 1+4 (Б/К с краёв → вспышка → **два прямоугольных клапана** закрываются → пунктир → FLIP вправо → fade текста). Intro: Б/К слетаются (десктоп) / собираются на месте (≤1400); цельный `top.png` падает сверху (`heroLayerTop`); белый пунктир сгиба (`phase-dashes`) — только после полной сборки Б/К+крышки. Текст hero на десктопе только fade; лид+кнопки снизу слева. ≤1400px: `hero--inplace` — лого собирается на месте между иконками и лидом; класс ставит синхронный `<script>` в `index.html` до отрисовки контента, геометрия `hero--intro` на мобилке совпадает с финальной (`100svh` / `space-between`), чтобы не было прыжка при обновлении. На мобилке текст hero без `translateY` (`.hero-reveal`) — иначе субпиксельный blur. ≤960px: hero жёстко в `100svh`. Логика анимации — `initHeroIntro()` в `main.js`. При `prefers-reduced-motion: reduce` intro пропускается.
 
 ### Оранжевый сгиб (главная)
 
@@ -91,7 +93,7 @@ npm run preview
 | `[data-fold-stop]` (`.why-fold-line`) | Верхняя горизонталь (под «Почему») |
 | `[data-fold-turn]` (`.section--print`) | Поворот вправо |
 | `[data-fold-return]` (`#order`) | Якорь секции заявки; вход пунктира в `.form-panel` |
-| `initFoldDash()` в `main.js` | Координаты path только при `min-width: 1401px`; `--why-fold-max` — зазоры у «Почему»; пунктир прорастает по скроллу (`applyReveal`), `maxReveal` не уменьшается при скролле вверх |
+| `initFoldDash()` в `main.js` | Координаты path только при `min-width: 1401px`; `--why-fold-max` — зазоры у «Почему»; пунктир прорастает по скроллу (`applyReveal`): на десктопе старт уже на первом экране (низ лого выше нижней кромки viewport), `maxReveal` не уменьшается при скролле вверх; во время intro/`hero--docking` SVG скрыт — рыжий fold появляется после FLIP на место |
 
 Чтобы подключить файлы Tablon Black / Bebas Neue локально (если есть woff2 с кириллицей), положите их в `public/fonts/` и пропишите `@font-face` в `src/styles/main.css` для `--font-display` / `--font-accent`.
 

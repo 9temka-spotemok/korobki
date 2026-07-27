@@ -9,6 +9,36 @@
       content="БАЛТКАРТОН: гофротара, гофроящики и картонная упаковка под заказ. Печать до 3 цветов, доставка по России. Минимальный тираж по согласованию."
     />
     <link rel="icon" type="image/png" href="/brand/logo-mark-light.png" />
+    <link
+      rel="preload"
+      href="/fonts/Yq6W-LOTXCb04q32xlpwv8ZfrxE.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/TK3IWkUHHAIjg75cFRf3bXL8LICs1_Fv40pKlN4NNSeSASz7FmlSHYjedg.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/xn7gYHE41ni1AdIRggOxSuXd.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/src/styles/fonts.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #0a0a0c;
+      }
+    </style>
+    <link rel="stylesheet" href="/src/styles/main.css" />
   </head>
   <body>
     <header class="site-header">
@@ -59,8 +89,166 @@
 
     <main class="site-main">
       <section class="hero hero--intro" data-hero>
-        <div class="hero__bg" aria-hidden="true"></div>
+        <script>
+          (() => {
+            const hero = document.currentScript.parentElement
+            if (!hero || !window.matchMedia('(max-width: 1400px)').matches) return
+            hero.classList.remove('hero--intro')
+            hero.classList.add('hero--inplace')
+          })()
+        </script>
+        <div class="hero__bg" aria-hidden="true">
+          <svg class="hero__bg-arcs" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+            <path
+              d="M-40 720 C280 520 520 780 780 420 S1180 80 1500 220"
+              fill="none"
+              stroke="rgba(255,90,31,0.22)"
+              stroke-width="1.5"
+            />
+            <path
+              d="M-20 800 C320 600 560 820 840 480 S1220 140 1520 280"
+              fill="none"
+              stroke="rgba(255,90,31,0.12)"
+              stroke-width="1.25"
+            />
+            <path
+              d="M40 860 C360 640 600 860 900 520 S1280 180 1560 320"
+              fill="none"
+              stroke="rgba(255,90,31,0.08)"
+              stroke-width="1"
+            />
+          </svg>
+        </div>
+        <!-- сверху текст → mark → лид/кнопки (на мобилке лого между иконками и текстом) -->
+        <div class="container hero__content hero__content--main">
+          <p class="hero__brand">
+            <span class="hero__brand-name">БАЛТКАРТОН</span>
+            <span class="hero__brand-tag">Производство гофрокартона</span>
+          </p>
+          <h1 class="hero__title">
+            Качество — это когда возвращается клиент, а не продукция
+          </h1>
+          <ul class="hero__points">
+            <li class="hero__point">
+              <span class="hero__point-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <path
+                    d="M24 8.5 L27.2 12.2 L31.8 10.6 L32.6 15.4 L37.4 16.3 L35.8 20.8 L39.5 24 L35.8 27.2 L37.4 31.7 L32.6 32.6 L31.8 37.4 L27.2 35.8 L24 39.5 L20.8 35.8 L16.3 37.4 L15.4 32.6 L10.6 31.8 L12.2 27.2 L8.5 24 L12.2 20.8 L10.6 16.3 L15.4 15.4 L16.3 10.6 L20.8 12.2 Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M18.2 24.2 22.4 28.4 30.2 20.2"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <span>Качественные <br class="hero__point-br" />материалы</span>
+            </li>
+            <li class="hero__point">
+              <span class="hero__point-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <path
+                    d="M9 18.5 24 10l15 8.5V31L24 39.5 9 31V18.5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M9 18.5 24 27l15-8.5M24 27v12.5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M16.5 14.2 24 10l7.5 4.2M20.2 22.8v8.2M27.8 22.8v8.2"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <span>Современное оборудование</span>
+            </li>
+            <li class="hero__point">
+              <span class="hero__point-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <path
+                    d="M24 9.5 36.5 16.5 24 23.5 11.5 16.5 Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M24 16.5 36.5 23.5 24 30.5 11.5 23.5 Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M24 23.5 36.5 30.5 24 37.5 11.5 30.5 Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <span>Любые объёмы<br />заказа</span>
+            </li>
+            <li class="hero__point">
+              <span class="hero__point-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <path
+                    d="M4 20h3.2M4 24.5h4.2M4 29h2.6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M10 18.5h16.5V31H10V18.5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M26.5 22H34l5.5 5.8V31H26.5V22Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  />
+                  <circle
+                    cx="16.2"
+                    cy="34.2"
+                    r="3"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <circle
+                    cx="33.2"
+                    cy="34.2"
+                    r="3"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M19.4 34.2h10.4"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span>Доставка по СПб, ЛО и всей России</span>
+            </li>
+          </ul>
+        </div>
         <div class="hero__mark-wrap" aria-hidden="true">
+          <span class="hero__impact" aria-hidden="true"></span>
           <span class="hero__mark-glow" aria-hidden="true"></span>
           <div class="hero__mark-stack">
             <img
@@ -92,7 +280,6 @@
               height="1354"
             />
           </div>
-          <!-- U-сгиб в том же боксе, что лого: left% = ось белого пунктира -->
           <svg class="fold-svg" aria-hidden="true">
             <path
               class="fold-svg__path"
@@ -102,23 +289,10 @@
             />
           </svg>
         </div>
-        <div class="container hero__content">
-          <p class="hero__brand">
-            <span class="hero__brand-name" data-hero-type>БАЛТКАРТОН</span>
-            <span class="hero__brand-tag" data-hero-type>Производство гофрокартона</span>
-          </p>
-          <p class="hero__slogan">
-            <span data-hero-type>Качество </span
-            ><span class="hero__slogan-dash" data-hero-dash aria-hidden="true"></span
-            ><span data-hero-type
-              > это когда возвращается клиент, а не продукция</span
-            >
-          </p>
-          <h1 data-hero-type>Гофротара и упаковка под ваш продукт</h1>
-          <p class="hero__lead" data-hero-type>
+        <div class="container hero__content hero__content--foot">
+          <p class="hero__lead">
             Стандартные конструкции FEFCO и индивидуальные размеры. Печать до трёх
-            цветов. Минимальный тираж — по согласованию. Поставки по
-            Санкт-Петербургу, ЛО и всей России.
+            цветов. Минимальный тираж — по согласованию.
           </p>
           <div class="btn-group" data-hero-actions>
             <a class="btn btn--primary" href="#order">Рассчитать тираж</a>

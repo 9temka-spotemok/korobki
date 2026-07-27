@@ -1,4 +1,3 @@
-import '../styles/main.css'
 import {
   productTypes,
   fefcoGroups,
@@ -27,68 +26,33 @@ function waitMs(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
 }
 
-async function typeHeroText(el, text, msPerChar = 26) {
-  el.textContent = ''
-  el.classList.add('hero-type-active')
-  for (let i = 0; i < text.length; i += 1) {
-    el.textContent += text[i]
-    await waitMs(msPerChar)
-  }
-  el.classList.remove('hero-type-active')
-}
-
-async function writeHeroCopy(hero) {
-  const nodes = [...hero.querySelectorAll('[data-hero-type]')]
-  const dash = hero.querySelector('[data-hero-dash]')
+async function writeHeroCopy(hero, { instant = false } = {}) {
   const actions = hero.querySelector('[data-hero-actions]')
-  const queue = nodes.map((el) => ({
-    el,
-    text: el.textContent.replace(/\s+/g, ' ').trimEnd(),
-  }))
-
-  // Полный текст на месте → замеряем финальную высоту блоков (чтобы на мобилке ничего не ползло).
-  // CTA не трогаем: is-in + transition давал вспышку кнопок в начале печати.
-  queue.forEach(({ el, text }) => {
-    el.textContent = text
-  })
-  if (dash) dash.hidden = false
-
-  hero.classList.add('hero--content-in', 'hero--measuring')
-  await new Promise((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(resolve))
-  })
-
   const blocks = [
     hero.querySelector('.hero__brand'),
-    hero.querySelector('.hero__slogan'),
-    hero.querySelector('.hero h1'),
+    hero.querySelector('.hero__title'),
+    hero.querySelector('.hero__points'),
     hero.querySelector('.hero__lead'),
     actions,
   ].filter(Boolean)
 
-  blocks.forEach((el) => {
-    el.style.minHeight = `${Math.ceil(el.getBoundingClientRect().height)}px`
-  })
-
-  queue.forEach(({ el }) => {
-    el.textContent = ''
-  })
-  if (dash) dash.hidden = true
-
-  hero.classList.remove('hero--measuring')
+  hero.classList.add('hero--content-in')
   window.dispatchEvent(new Event('resize'))
 
-  for (const item of queue) {
-    // рыжий штрих слогана — между «Качество » и продолжением
-    if (dash && dash.hidden && item.el.previousElementSibling === dash) {
-      dash.hidden = false
-      await waitMs(90)
-    }
-    await typeHeroText(item.el, item.text, item.text.length > 40 ? 16 : 28)
-    await waitMs(140)
+  if (instant) {
+    // без .hero-reveal: translateY на мобилке даёт мыльный/«кривой» текст
+    return
   }
 
-  if (actions) actions.classList.add('is-in')
+  blocks.forEach((el) => el.classList.add('hero-reveal'))
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  })
+
+  for (const el of blocks) {
+    el.classList.add('is-in')
+    await waitMs(140)
+  }
 }
 
 function initHeroIntro() {
@@ -102,20 +66,32 @@ function initHeroIntro() {
     mark.style.transformOrigin = ''
   }
 
+  const revealBlocks = () =>
+    [
+      hero.querySelector('.hero__brand'),
+      hero.querySelector('.hero__title'),
+      hero.querySelector('.hero__points'),
+      hero.querySelector('.hero__lead'),
+      hero.querySelector('[data-hero-actions]'),
+    ].filter(Boolean)
+
   const finishInstant = () => {
-    hero.classList.remove('hero--intro', 'hero--settling')
+    hero.classList.remove('hero--intro', 'hero--settling', 'hero--phase-impact')
     hero.classList.add(
       'hero--ready',
+      'hero--inplace',
       'hero--phase-letters',
       'hero--phase-top',
       'hero--phase-dashes',
       'hero--content-in',
     )
-    const dash = hero.querySelector('[data-hero-dash]')
-    const actions = hero.querySelector('[data-hero-actions]')
-    if (dash) dash.hidden = false
-    if (actions) actions.classList.add('is-in')
+    if (window.matchMedia('(max-width: 1400px)').matches) {
+      hero.classList.add('hero--content-in')
+    } else {
+      revealBlocks().forEach((el) => el.classList.add('hero-reveal', 'is-in'))
+    }
     clearMarkMotion()
+    hero.style.minHeight = ''
     window.dispatchEvent(new Event('resize'))
   }
 
@@ -128,28 +104,19 @@ function initHeroIntro() {
   const later = (fn, ms) => window.setTimeout(fn, ms)
   const stackedHero = window.matchMedia('(max-width: 1400px)').matches
 
-  // 1) Б и К
-  hero.classList.add('hero--phase-letters')
-  // 2) рыжий верх
-  later(() => hero.classList.add('hero--phase-top'), 520)
-  // 3) пунктиры сгиба в лого
-  later(() => hero.classList.add('hero--phase-dashes'), 980)
-  // 4) уезжает на место → 5) текст печатается по очереди
-  later(() => {
-    // ≤1400px: без FLIP — контент ещё absolute, «последняя» позиция mark была бы сверху пустого hero
-    if (stackedHero) {
-      hero.classList.add('hero--ready')
-      hero.classList.remove('hero--intro', 'hero--settling')
-      clearMarkMotion()
-      writeHeroCopy(hero)
-      return
-    }
-
-    const first = mark.getBoundingClientRect()
-    hero.classList.add('hero--settling', 'hero--ready')
+  // Мобилка/планшет: контент сразу виден; пунктир — только после Б/К + крышки
+  if (stackedHero) {
     hero.classList.remove('hero--intro')
+    hero.classList.add('hero--inplace', 'hero--content-in')
+    later(() => hero.classList.add('hero--phase-letters'), 40)
+    later(() => hero.classList.add('hero--phase-top'), 420)
+    // top 0.7s → ~1120; dashes 0.7s; ready после полной отрисовки
+    later(() => hero.classList.add('hero--phase-dashes'), 1200)
+    later(() => hero.classList.add('hero--ready'), 2000)
+    return
+  }
 
-    const last = mark.getBoundingClientRect()
+  const animateFlip = (first, last, duration, onDone) => {
     const dx = first.left - last.left
     const dy = first.top - last.top
     const sx = first.width / Math.max(last.width, 1)
@@ -161,31 +128,51 @@ function initHeroIntro() {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        mark.style.transition = `transform ${DOCK_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`
+        mark.style.transition = `transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1)`
         mark.style.transform = 'translate(0, 0) scale(1)'
 
-        let started = false
-        const startTyping = () => {
-          if (started) return
-          started = true
+        let done = false
+        const finish = () => {
+          if (done) return
+          done = true
           clearMarkMotion()
-          hero.classList.remove('hero--settling')
-          writeHeroCopy(hero)
+          onDone?.()
         }
 
         const onEnd = (event) => {
           if (event.target !== mark || event.propertyName !== 'transform') return
           mark.removeEventListener('transitionend', onEnd)
-          startTyping()
+          finish()
         }
         mark.addEventListener('transitionend', onEnd)
         later(() => {
           mark.removeEventListener('transitionend', onEnd)
-          startTyping()
-        }, DOCK_MS + 100)
+          finish()
+        }, duration + 120)
       })
     })
-  }, 1750)
+  }
+
+  const startDock = () => {
+    const first = mark.getBoundingClientRect()
+    // docking: рыжий fold скрыт, пока лого едет на место
+    hero.classList.add('hero--ready', 'hero--docking')
+    hero.classList.remove('hero--intro', 'hero--phase-impact')
+    const last = mark.getBoundingClientRect()
+    animateFlip(first, last, DOCK_MS, () => {
+      hero.classList.remove('hero--docking')
+      writeHeroCopy(hero)
+    })
+  }
+
+  // Десктоп: Б/К → вспышка + крышка → (всё готово) → пунктир → FLIP → текст
+  hero.classList.add('hero--phase-letters')
+  later(() => {
+    hero.classList.add('hero--phase-impact', 'hero--phase-top')
+  }, 720)
+  // top 0.7s с 720 → ~1420; пунктир только когда короб уже собран
+  later(() => hero.classList.add('hero--phase-dashes'), 1550)
+  later(startDock, 2350)
 }
 
 function initFoldDash() {
@@ -266,8 +253,9 @@ function initFoldDash() {
     const markBottom = mark.getBoundingClientRect().bottom
     const formTop = form.getBoundingClientRect().top
     const viewH = window.innerHeight
-    // 0 — низ лого у середины экрана; 1 — линия дошла до формы
-    const start = markBottom - viewH * 0.52
+    // 0 — низ лого у нижней кромки viewport (на первом экране линия уже растёт);
+    // 1 — линия дошла до формы
+    const start = markBottom - viewH
     const end = formTop - viewH * 0.38
     const progress = Math.min(1, Math.max(0, (0 - start) / Math.max(1, end - start)))
     maxReveal = Math.max(maxReveal, progress)
