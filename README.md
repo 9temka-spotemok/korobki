@@ -35,6 +35,7 @@ npm run preview
 |---|---|
 | `index.html` | Главная: hero, «Почему», печать, логистика, форма (сетка продукции только в каталоге) |
 | `catalog.html` | Каталог: сетка типов + модалка, материалы (трёх-/пятислойный, Z-картон), FEFCO |
+| `journey.html` | Cinematic Journey: scroll-driven 3D история гофрокартона (React + R3F + GSAP + Lenis) |
 | `print.html` | Печать логотипов (флексо, демо PANTONE на коробе) |
 | `delivery.html` | Доставка, самовывоз, оплата |
 | `contacts.html` | Телефон, email, адрес, карта, форма |
@@ -43,10 +44,24 @@ npm run preview
 
 | Путь | За что отвечает |
 |---|---|
-| `vite.config.js` | Multi-page сборка Vite (все HTML-точки входа) |
-| `package.json` | Скрипты `dev` / `build` / `preview`; зависимости: `vite`, `three` |
+| `vite.config.js` | Multi-page сборка Vite (все HTML-точки входа) + `@vitejs/plugin-react` для Journey |
+| `package.json` | Скрипты `dev` / `build` / `preview`; зависимости: `vite`, `three`, `react`, `@react-three/*`, `gsap`, `lenis` |
 | `src/js/main.js` | Навигация, меню, форма, reveal, `initHeroIntro`, `initFoldDash`, `renderProductList`, `renderBoardTypes`, `initProductModal`, `initPrintDemo` |
-| `src/js/print-box-3d.js` | Three.js-сцена демо печати: короб, OrbitControls, текстуры Pantone/лого |
+| `src/js/print-box-3d.js` | Three.js-сцена демо печати: OrbitControls, Pantone/лого; геометрии из `cardboard-kit.js` |
+| `src/lib/cardboard-kit.js` | Общие модели: гофролист (лайнеры + экструзия волны), RSC FEFCO 0201, пицца-бокс, kraft-материалы `#B79477` |
+| `src/journey/main.jsx` | Точка входа React для `journey.html` |
+| `src/journey/App.jsx` | Оболочка Journey: Canvas, Lenis-скроллер, оверлеи, прогресс |
+| `src/journey/hooks/useScrollStory.js` | Lenis + GSAP ScrollTrigger → master progress 0–1 |
+| `src/journey/data/story.js` | Таймлайн секций, типы коробов, этапы производства, trust-статы |
+| `src/journey/state/configStore.js` | Состояние 3D-конфигуратора: длина/ширина/высота мм (`SIZE_BOUNDS` 400–800 / 300–600 / 240–600), картон, печать, тираж |
+| `src/journey/materials/kraft.js` | Текстура бурого картона как в конструкторе (`#B79477` + soft fiber); гофра только на торце; флексо: `ensurePrintArtwork` / `createPrintTexture` (логотип) |
+| `src/journey/components/Scene.jsx` | R3F-сцена: `StudioAtmosphere` (тёплый kraft-задник + мягкий пол), свет, Environment, ContactShadows, пыль, камера |
+| `src/journey/components/CorrugatedSheet.jsx` | (legacy) старый hero-лист; Journey использует `cardboard-kit` |
+| `src/journey/components/CardboardObject.jsx` | Scroll: лист/RSC/пицца; на Printing — логотип спереди и транспортные знаки сбоку; финал — закрытие → `closedTop` |
+| `src/journey/components/Overlays.jsx` | Типографика секций, привязанная к progress; на «Применение» — CTA «Оставить заявку» → `contacts.html#order` |
+| `src/journey/components/ConfiguratorPanel.jsx` | UI конфигуратора: размеры / картон / печать / тираж + CTA «Оставить заявку» → `contacts.html#order` |
+| `src/journey/components/BrandSelect.jsx` | Кастомная выпадашка конфигуратора: чёрный триггер, белый список, серая активная строка |
+| `src/journey/styles/journey.css` | Стили cinematic-страницы; `.j-select`; планшет `961–1100` / portrait ≤1366 (крупнее текст); мобильный `≤960px` / `≤420px` |
 | `src/partials/shell.js` | Разметка формы заявки (`.form-panel`, согласие `.form-consent`) и partials шапки/подвала |
 | `src/data/catalog.js` | Типы продукции (в т.ч. крупногабарит, овощные/мясные лотки), FEFCO, `materials`, `boardTypes` (Т-21–Т-27, П-31–П-37, Z-картон); минимальный тираж — по согласованию |
 | `src/data/pantone.js` | Семейства PANTONE Color Bridge + оттенки для ползунка на `print.html` |
@@ -69,6 +84,18 @@ npm run preview
 | `public/images/print-logo-pizza.svg` | Исходник логотипа Pizza (3 слоя) для демо печати |
 | `public/images/products/` | Фото типов упаковки (по `id` из `catalog.js`) |
 | `public/images/products/*.png` | Фото типов упаковки по `id` из `catalog.js` |
+
+## Journey (cinematic landing)
+
+Отдельная страница `/journey.html` — scroll-storytelling вокруг **одного** гофролиста, который складывается в короб, морфится между типами упаковки, проходит производство, печать, приложения, конфигуратор, trust и финальный CTA. На планшетах (`viewportFit` / CameraRig: ширина <1100 или portrait ≤1366) короб уменьшен (~0.68), камера дальше, тексты этапов снизу (как на телефоне), типографика крупнее. На узких экранах (`≤960px`): компактная шапка (История + Заявка), тексты снизу, конфигуратор с внутренним скроллом, `journey--narrow`.
+
+Стек: React 19, React Three Fiber, Drei, postprocessing (Bloom / DoF / Vignette), GSAP ScrollTrigger, Lenis. Основной сайт остаётся multi-page Vite (без Next.js), чтобы не ломать текущие HTML-страницы.
+
+Секции по `src/journey/data/story.js` (`SECTIONS`): Hero → Fold (лист → готовый RSC) → Box evolution (морф размеров → пицца + доп. скролл с поворотом, `EVO_PIZZA_GATE` / `EVO_PIZZA_SPIN`) → Manufacturing → Printing → Applications → Configurator → Trust → Finale. CTA ведёт на `contacts.html#order`.
+
+3D в Journey (`cardboard-kit.js`): лист → готовый RSC (без сборки) → морф размеров → пицца-бокс. RSC — простые `BoxGeometry`-панели (как в конструкторе): один kraft `plain` на стенках и клапанах, без ExtrudeGeometry/капов/knuckle (они давали смазанные UV и щели).
+
+На секции **Printing** на переднюю/заднюю грань RSC (`mats.logo`) собирается логотип из слоёв `public/brand/mark-layers/` (Б / К / крышка / пунктир) + текст «БАЛТКАРТОН» / «ПРОИЗВОДСТВО ГОФРОКАРТОНА». На **3 цвета** пунктир сгиба — белый (`#ffffff`).
 
 ## Бренд
 

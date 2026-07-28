@@ -1,4 +1,4 @@
-﻿/** Разметка шапки и подвала для единообразия страниц */
+/** Разметка шапки и подвала для единообразия страниц */
 export const headerHTML = `
   <header class="site-header">
     <div class="container site-header__inner">
@@ -12,6 +12,7 @@ export const headerHTML = `
       <nav class="nav" aria-label="Основная навигация">
         <a data-nav href="index.html">Главная</a>
         <a data-nav href="catalog.html">Каталог</a>
+        <a data-nav href="journey.html">История</a>
         <a data-nav href="print.html">Печать логотипов</a>
         <a data-nav href="delivery.html">Доставка и оплата</a>
         <a data-nav href="contacts.html">Контакты</a>
@@ -43,6 +44,7 @@ export const footerHTML = `
         </a>
         <nav class="site-footer__nav" aria-label="Навигация в подвале">
           <a href="catalog.html">Каталог</a>
+          <a href="journey.html">История</a>
           <a href="print.html">Печать логотипов</a>
           <a href="delivery.html">Доставка и оплата</a>
           <a href="contacts.html">Контакты</a>
