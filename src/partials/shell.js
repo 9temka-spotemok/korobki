@@ -2,7 +2,7 @@
 export const headerHTML = `
   <header class="site-header">
     <div class="container site-header__inner">
-      <a class="logo" href="index.html" aria-label="БАЛТКАРТОН — на главную">
+      <a class="logo" href="journey.html" aria-label="БАЛТКАРТОН — на главную">
         <img class="logo__img--light" src="/brand/logo-horizontal-light.png" alt="БАЛТКАРТОН — производство гофрокартона" width="220" height="48" />
         <img class="logo__img--dark" src="/brand/logo-horizontal-dark.png" alt="" width="220" height="48" aria-hidden="true" />
       </a>
@@ -10,9 +10,8 @@ export const headerHTML = `
         <span></span><span></span><span></span>
       </button>
       <nav class="nav" aria-label="Основная навигация">
-        <a data-nav href="index.html">Главная</a>
+        <a data-nav href="journey.html">Главная</a>
         <a data-nav href="catalog.html">Каталог</a>
-        <a data-nav href="journey.html">История</a>
         <a data-nav href="print.html">Печать логотипов</a>
         <a data-nav href="delivery.html">Доставка и оплата</a>
         <a data-nav href="contacts.html">Контакты</a>
@@ -39,12 +38,12 @@ export const footerHTML = `
   <footer class="site-footer">
     <div class="container">
       <div class="site-footer__top">
-        <a class="footer-logo" href="index.html" aria-label="БАЛТКАРТОН">
+        <a class="footer-logo" href="journey.html" aria-label="БАЛТКАРТОН">
           <img src="/brand/logo-horizontal-light.png" alt="БАЛТКАРТОН" width="180" height="40" />
         </a>
         <nav class="site-footer__nav" aria-label="Навигация в подвале">
+          <a href="journey.html">Главная</a>
           <a href="catalog.html">Каталог</a>
-          <a href="journey.html">История</a>
           <a href="print.html">Печать логотипов</a>
           <a href="delivery.html">Доставка и оплата</a>
           <a href="contacts.html">Контакты</a>

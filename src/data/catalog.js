@@ -19,14 +19,14 @@ export const productTypes = [
     title: 'Овощные лотки',
     description:
       'Гофролотки для овощей и фруктов: вентиляция, штабелирование, удобная выкладка и перевозка с поля и склада.',
-    image: '/images/products/trays.png',
+    image: '/images/products/veg-trays.png',
   },
   {
     id: 'meat-trays',
     title: 'Лотки под мясную продукцию',
     description:
       'Лотки и тара для мясной продукции: конструкция под вес, штабелирование и логистику охлаждённых и замороженных грузов.',
-    image: '/images/products/trays.png',
+    image: '/images/products/meat-trays.png',
   },
   {
     id: 'self-lock',
@@ -61,7 +61,7 @@ export const productTypes = [
     title: 'Крупногабаритная гофротара',
     description:
       'Ящики и конструкции под крупногабаритные грузы: мебель, техника, оборудование. Индивидуальные размеры и усиленные материалы.',
-    image: '/images/products/reinforced.png',
+    image: '/images/products/oversized.png',
   },
   {
     id: 'fullcolor',

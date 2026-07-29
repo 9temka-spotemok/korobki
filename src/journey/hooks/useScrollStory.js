@@ -80,5 +80,16 @@ export function useScrollStory(scrollerRef) {
     }
   }, [scrollerRef])
 
-  return { progress, progressRef, lenisRef }
+  const scrollToProgress = (targetProgress, { duration = 1.25 } = {}) => {
+    const scroller = scrollerRef.current
+    const lenis = lenisRef.current
+    if (!scroller || !lenis) return
+    const content = scroller.querySelector('[data-journey-content]')
+    if (!content) return
+    const maxScroll = Math.max(0, content.offsetHeight - scroller.clientHeight)
+    const p = Math.min(1, Math.max(0, targetProgress))
+    lenis.scrollTo(p * maxScroll, { duration })
+  }
+
+  return { progress, progressRef, lenisRef, scrollToProgress }
 }

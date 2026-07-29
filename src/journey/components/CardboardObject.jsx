@@ -125,7 +125,6 @@ export function CardboardObject({ progress }) {
     const p = progress.current ?? 0
     const foldP = sectionProgress(p, SECTIONS.fold.start, SECTIONS.fold.end)
     const evoP = sectionProgress(p, SECTIONS.evolution.start, SECTIONS.evolution.end)
-    const mfgP = sectionProgress(p, SECTIONS.manufacturing.start, SECTIONS.manufacturing.end)
     const printP = sectionProgress(p, SECTIONS.printing.start, SECTIONS.printing.end)
     const appP = sectionProgress(p, SECTIONS.applications.start, SECTIONS.applications.end)
     const trustP = sectionProgress(p, SECTIONS.trust.start, SECTIONS.trust.end)
@@ -166,16 +165,9 @@ export function CardboardObject({ progress }) {
 
       tPizza = pizzaIn
       tBox = 1 - pizzaIn
-    }
-
-    if (p >= SECTIONS.manufacturing.start && p < SECTIONS.printing.start) {
-      // Keep RSC box through all manufacturing steps (no sheet flash on «Биговка» etc.)
-      tSheet = 0
-      tBox = 1
-      tPizza = 0
-      sx = 1
-      sy = 1
-      sz = 1
+      // Brand lockup on RSC walls and pizza lid throughout evolution
+      tMode = 1
+      tInk = 0.92
     }
 
     if (p >= SECTIONS.printing.start && p < SECTIONS.applications.start) {
@@ -217,6 +209,11 @@ export function CardboardObject({ progress }) {
       tMode = Math.max(0, PRINT_MODES.indexOf(mode))
     }
 
+    // Same breakpoints as viewportFit / journey compact layout
+    const compactUi =
+      frame.size.width < 1100 ||
+      (frame.size.width <= 1366 && frame.size.height >= frame.size.width * 0.95)
+
     if (p >= SECTIONS.trust.start && p < SECTIONS.finale.start) {
       tSheet = 0
       tBox = 1
@@ -226,7 +223,9 @@ export function CardboardObject({ progress }) {
       sx = 0.92
       sy = 0.88
       sz = 0.92
-      tInk = 0.95
+      // Desktop: plain kraft for overlay readability; tablet/phone keep brand mark
+      tMode = 1
+      tInk = compactUi ? 0.9 : 0
     }
 
     if (p >= SECTIONS.finale.start) {
@@ -240,8 +239,8 @@ export function CardboardObject({ progress }) {
       sx = 1.05
       sy = 1.05
       sz = 1.05
-      tInk = 0.85
       tMode = 1
+      tInk = compactUi ? 0.85 : 0
     }
 
     const s = damp.current
@@ -395,19 +394,16 @@ export function CardboardObject({ progress }) {
 
     if (root.current) {
       const toBox = smoothstep(0.2, 1, foldP)
-      // Manufacturing: gentle yaw so the open RSC turns a bit as steps advance
-      const mfgYaw = smoothstep(0, 1, mfgP) * 0.38
       const orbit =
         0.25 +
         toBox * 0.45 +
         evoP * 0.7 +
-        mfgYaw +
         printP * 0.9 +
         frame.clock.elapsedTime * 0.018 * (0.4 + (1 - hero) * 0.45)
       root.current.rotation.y = THREE.MathUtils.damp(root.current.rotation.y, orbit, 2.2, delta)
       root.current.rotation.x = THREE.MathUtils.damp(
         root.current.rotation.x,
-        lerp(0.38, 0.16, toBox) - s.open * 0.06 - s.close * 0.1 + mfgYaw * 0.12,
+        lerp(0.38, 0.16, toBox) - s.open * 0.06 - s.close * 0.1,
         2.8,
         delta,
       )

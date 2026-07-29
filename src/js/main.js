@@ -439,13 +439,15 @@ function initHeaderScroll() {
 
 function initNav() {
   const path = window.location.pathname.replace(/\/$/, '') || '/'
-  const file = path.split('/').pop() || 'index.html'
+  const file = path.split('/').pop() || 'journey.html'
   const current =
-    file === '' || file === '/' || file === 'index.html' ? 'index.html' : file
+    file === '' || file === '/' || file === 'index.html' || file === 'journey.html'
+      ? 'journey.html'
+      : file
 
   document.querySelectorAll('[data-nav]').forEach((link) => {
     const href = link.getAttribute('href')
-    if (href === current || (current === 'index.html' && href === './')) {
+    if (href === current || (current === 'journey.html' && (href === './' || href === 'index.html'))) {
       link.classList.add('is-active')
     }
   })

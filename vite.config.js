@@ -6,6 +6,9 @@ export default defineConfig({
   root: '.',
   publicDir: 'public',
   plugins: [react()],
+  server: {
+    open: '/journey.html',
+  },
   build: {
     rollupOptions: {
       input: {

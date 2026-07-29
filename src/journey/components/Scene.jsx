@@ -128,7 +128,6 @@ function CameraRig({ progress }) {
   useFrame((state, delta) => {
     const p = progress.current ?? 0
     const fold = sectionProgress(p, SECTIONS.fold.start, SECTIONS.fold.end)
-    const mfg = sectionProgress(p, SECTIONS.manufacturing.start, SECTIONS.manufacturing.end)
     const fin = sectionProgress(p, SECTIONS.finale.start, SECTIONS.finale.end)
     const cfg = sectionProgress(p, SECTIONS.configurator.start, SECTIONS.configurator.end)
     const w = state.size.width
@@ -140,10 +139,8 @@ function CameraRig({ progress }) {
     const zMul = phone ? 1.55 : mobile ? 1.38 : tablet ? 1.24 : 1
     const yLift = phone ? 0.28 : mobile ? 0.16 : tablet ? 0.1 : 0
 
-    // On phone/tablet skip hard manufacturing close-up — it clips open flaps
-    const mfgZoom = mobile || tablet ? 0.06 : 0.22
-    const zoom = (2.95 - fold * 0.12 - mfg * mfgZoom + cfg * 0.12 - fin * 0.55) * zMul
-    const y = 1.35 - fold * 0.28 + mfg * (mobile || tablet ? 0.08 : 0.22) - fin * 0.18 + yLift
+    const zoom = (2.95 - fold * 0.12 + cfg * 0.12 - fin * 0.55) * zMul
+    const y = 1.35 - fold * 0.28 - fin * 0.18 + yLift
     CAM_TARGET.y = 0.1 + fold * 0.22 + fin * 0.12 - (mobile || tablet ? 0.06 : 0)
     state.camera.position.x = THREE.MathUtils.damp(
       state.camera.position.x,

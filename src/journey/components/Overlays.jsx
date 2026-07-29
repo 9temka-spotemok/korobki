@@ -2,13 +2,15 @@ import {
   APPLICATIONS,
   BOX_TYPES,
   EVO_PIZZA_GATE,
-  MANUFACTURING,
+  HERO_LEAD,
+  HERO_POINTS,
   PRINT_MODES,
   SECTIONS,
   TRUST_STATS,
   sectionProgress,
   smoothstep,
 } from '../data/story'
+import { HeroPointIcon } from './HeroPointIcon'
 
 function opacityIn(progress, start, end, fade = 0.18, { holdEnd = false } = {}) {
   const p = sectionProgress(progress, start, end)
@@ -40,8 +42,6 @@ export function Overlays({ progress, children }) {
           BOX_TYPES.length - 2,
           Math.floor((evoP / EVO_PIZZA_GATE) * Math.max(1, BOX_TYPES.length - 1)),
         )
-  const mfgP = sectionProgress(progress, SECTIONS.manufacturing.start, SECTIONS.manufacturing.end)
-  const mfgIndex = Math.min(MANUFACTURING.length - 1, Math.floor(mfgP * MANUFACTURING.length))
   const printP = sectionProgress(progress, SECTIONS.printing.start, SECTIONS.printing.end)
   const printIndex = Math.min(PRINT_MODES.length - 1, Math.floor(printP * PRINT_MODES.length))
   const appP = sectionProgress(progress, SECTIONS.applications.start, SECTIONS.applications.end)
@@ -49,32 +49,71 @@ export function Overlays({ progress, children }) {
 
   return (
     <div className="journey-overlays">
-      <Stage progress={progress} start={SECTIONS.hero.start} end={SECTIONS.fold.end} align="center" className="journey-stage--hero">
-        <p className="journey-eyebrow">БАЛТКАРТОН</p>
-        <h1>Упаковка, которая защищает продукт.</h1>
-        <p className="journey-sub">От гофрокартона до индивидуальной упаковки.</p>
-        <a className="journey-cta" href="contacts.html#order">
-          Оставить заявку
-        </a>
-      </Stage>
-
-      <Stage progress={progress} start={SECTIONS.evolution.start} end={SECTIONS.evolution.end} align="left">
-        <p className="journey-eyebrow">Эволюция короба</p>
-        <h2>{BOX_TYPES[evoIndex].label}</h2>
-        <p className="journey-sub">Один объект. Разные геометрии. Плавный морф под каждое применение.</p>
-      </Stage>
-
-      <Stage progress={progress} start={SECTIONS.manufacturing.start} end={SECTIONS.manufacturing.end} align="right">
-        <p className="journey-eyebrow">Производство</p>
-        <h2>{MANUFACTURING[mfgIndex]}</h2>
-        <p className="journey-sub">От листа картона до готовой упаковки — одна непрерывная линия.</p>
-        <ul className="journey-steps">
-          {MANUFACTURING.map((step, i) => (
-            <li key={step} className={i === mfgIndex ? 'is-active' : ''}>
-              {step}
+      <Stage
+        progress={progress}
+        start={SECTIONS.hero.start}
+        end={SECTIONS.fold.end}
+        align="left"
+        className="journey-stage--hero-top"
+      >
+        <ul className="journey-hero-points">
+          {HERO_POINTS.map((point) => (
+            <li key={point.id} className="journey-hero-point">
+              <span className="journey-hero-point__icon">
+                <HeroPointIcon name={point.icon} />
+              </span>
+              <span className="journey-hero-point__label">{point.label}</span>
             </li>
           ))}
         </ul>
+        <p className="journey-sub journey-hero-lead">{HERO_LEAD}</p>
+      </Stage>
+
+      <Stage
+        progress={progress}
+        start={SECTIONS.hero.start}
+        end={SECTIONS.fold.end}
+        align="center"
+        className="journey-stage--hero-brand"
+      >
+        <p className="journey-hero-brand">БАЛТКАРТОН</p>
+      </Stage>
+
+      <Stage
+        progress={progress}
+        start={SECTIONS.hero.start}
+        end={SECTIONS.fold.end}
+        align="center"
+        className="journey-stage--hero-cta"
+      >
+        <div className="journey-hero-cta-pack">
+          <h1>Упаковка, которая защищает продукт.</h1>
+          <p className="journey-sub">От гофрокартона до индивидуальной упаковки.</p>
+          <a className="journey-cta" href="contacts.html#order">
+            Оставить заявку
+          </a>
+        </div>
+      </Stage>
+
+      <Stage
+        progress={progress}
+        start={SECTIONS.evolution.start}
+        end={SECTIONS.evolution.end}
+        align="left"
+        className="journey-stage--evo"
+      >
+        <p className="journey-eyebrow">Эволюция короба</p>
+        <h2>{BOX_TYPES[evoIndex].label}</h2>
+        <p className="journey-sub journey-sub--evo" key={`${BOX_TYPES[evoIndex].id}-desc`}>
+          {BOX_TYPES[evoIndex].desc}
+        </p>
+        <a
+          className="journey-cta"
+          href="contacts.html#order"
+          key={`${BOX_TYPES[evoIndex].id}-cta`}
+        >
+          Оставить заявку
+        </a>
       </Stage>
 
       <Stage
@@ -103,7 +142,7 @@ export function Overlays({ progress, children }) {
         progress={progress}
         start={SECTIONS.applications.start}
         end={SECTIONS.applications.end}
-        align="right"
+        align="left"
         className="journey-stage--apps"
       >
         <p className="journey-eyebrow">Применение</p>
