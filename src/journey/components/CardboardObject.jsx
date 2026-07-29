@@ -44,7 +44,7 @@ function viewportFit(width, height) {
 
 /**
  * Journey 3D:
- * hero sheet → ready constructor RSC → size morph (display/gift/mailer/…) → pizza box.
+ * Ready RSC box from start → size morph (display/gift/mailer/…) → pizza box.
  */
 export function CardboardObject({ progress }) {
   const root = useRef()
@@ -79,8 +79,8 @@ export function CardboardObject({ progress }) {
   const pizzaLid = useMemo(() => findByRole(pizza, 'pizzaLid'), [pizza])
 
   const damp = useRef({
-    sheet: 1,
-    box: 0,
+    sheet: 0,
+    box: 1,
     pizza: 0,
     open: 0,
     close: 0,
@@ -123,7 +123,6 @@ export function CardboardObject({ progress }) {
 
   useFrame((frame, delta) => {
     const p = progress.current ?? 0
-    const foldP = sectionProgress(p, SECTIONS.fold.start, SECTIONS.fold.end)
     const evoP = sectionProgress(p, SECTIONS.evolution.start, SECTIONS.evolution.end)
     const printP = sectionProgress(p, SECTIONS.printing.start, SECTIONS.printing.end)
     const appP = sectionProgress(p, SECTIONS.applications.start, SECTIONS.applications.end)
@@ -131,9 +130,9 @@ export function CardboardObject({ progress }) {
     const finP = sectionProgress(p, SECTIONS.finale.start, SECTIONS.finale.end)
     const hero = sectionProgress(p, SECTIONS.hero.start, SECTIONS.hero.end)
 
-    // Sheet → ready RSC (no assembly)
-    let tSheet = 1 - smoothstep(0.25, 0.75, foldP)
-    let tBox = smoothstep(0.35, 0.85, foldP)
+    // Ready RSC box on the home screen (no flat sheet)
+    let tSheet = 0
+    let tBox = 1
     let tPizza = 0
     let tOpen = 0
     let tClose = 0
@@ -393,23 +392,21 @@ export function CardboardObject({ progress }) {
     }
 
     if (root.current) {
-      const toBox = smoothstep(0.2, 1, foldP)
       const orbit =
-        0.25 +
-        toBox * 0.45 +
+        0.7 +
         evoP * 0.7 +
         printP * 0.9 +
         frame.clock.elapsedTime * 0.018 * (0.4 + (1 - hero) * 0.45)
       root.current.rotation.y = THREE.MathUtils.damp(root.current.rotation.y, orbit, 2.2, delta)
       root.current.rotation.x = THREE.MathUtils.damp(
         root.current.rotation.x,
-        lerp(0.38, 0.16, toBox) - s.open * 0.06 - s.close * 0.1,
+        0.16 - s.open * 0.06 - s.close * 0.1,
         2.8,
         delta,
       )
       root.current.position.y = THREE.MathUtils.damp(
         root.current.position.y,
-        lerp(0.02, 0.08, toBox) + trustP * 0.1 + finP * 0.05,
+        0.08 + trustP * 0.1 + finP * 0.05,
         4,
         delta,
       )

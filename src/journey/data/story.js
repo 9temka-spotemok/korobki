@@ -106,7 +106,7 @@ export const HERO_LEAD =
 export const SECTIONS = {
   // Start block (hero+fold) shortened ~2× vs previous 0–0.2
   hero: { start: 0, end: 0.05 },
-  // Sheet → ready RSC box (no fold assembly)
+  // Camera settle after hero (box already on screen)
   fold: { start: 0.04, end: 0.1 },
   // RSC size morph → pizza appears → extra scroll spins the pizza
   evolution: { start: 0.1, end: 0.38 },

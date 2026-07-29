@@ -55,7 +55,12 @@ export default function App() {
     >
       <header className={`journey-nav${menuOpen ? ' is-menu-open' : ''}`}>
         <a className="journey-nav__brand" href="journey.html" aria-label="БАЛТКАРТОН — на главную">
-          <img src="/brand/logo-horizontal-light.png" alt="БАЛТКАРТОН" width="160" height="36" />
+          <img
+            src="/brand/logo-horizontal-light.png"
+            alt="БАЛТКАРТОН — производство гофрокартона"
+            width="320"
+            height="72"
+          />
         </a>
         <button
           type="button"
@@ -129,8 +134,13 @@ export default function App() {
             <div className="journey-progress" aria-hidden="true">
               <div className="journey-progress__bar" style={{ transform: `scaleX(${progress})` }} />
             </div>
-            <p className="journey-hint" style={{ opacity: progress < 0.04 ? 0.7 : 0 }}>
-              Листайте вниз
+            <p
+              className="journey-hint"
+              style={{ opacity: progress < 0.05 ? 1 : 0 }}
+              aria-hidden={progress >= 0.05}
+            >
+              <span className="journey-hint__label">Листайте вниз</span>
+              <span className="journey-hint__arrow" aria-hidden="true" />
             </p>
           </div>
         </div>
