@@ -41,20 +41,20 @@ const BAR_PROPS = {
   phone: {
     proximityRadius: 52,
     maxShift: 3,
-    markerLength: 28,
-    markerGap: 3,
+    markerLength: 14,
+    markerGap: 4,
     tickScale: 0.3,
-    itemGap: 10,
-    fontSize: 0.6,
+    itemGap: 12,
+    fontSize: 0.72,
   },
   tablet: {
     proximityRadius: 88,
     maxShift: 6,
-    markerLength: 52,
+    markerLength: 18,
     markerGap: 6,
     tickScale: 0.42,
-    itemGap: 22,
-    fontSize: 1.18,
+    itemGap: 24,
+    fontSize: 1.28,
   },
 }
 
@@ -73,19 +73,19 @@ export function JourneySectionNav({ progress, onJump }) {
         orientation={isBar ? 'horizontal' : 'vertical'}
         items={LABELS}
         accentColor="#ff5a1f"
-        textColor="#9e9890"
-        markerColor="#6a6560"
-        showIndex
+        textColor="#6a5f54"
+        markerColor="#a89888"
+        showIndex={false}
         showMarker
         proximityRadius={bar?.proximityRadius ?? 120}
-        maxShift={bar?.maxShift ?? 32}
+        maxShift={bar?.maxShift ?? 18}
         falloff="smooth"
-        markerLength={bar?.markerLength ?? 56}
-        markerGap={bar?.markerGap ?? 2}
+        markerLength={bar?.markerLength ?? 22}
+        markerGap={bar?.markerGap ?? 8}
         tickScale={bar?.tickScale ?? 0.5}
-        scaleTick
-        itemGap={bar?.itemGap ?? 16}
-        fontSize={bar?.fontSize ?? 1.05}
+        scaleTick={false}
+        itemGap={bar?.itemGap ?? 22}
+        fontSize={bar?.fontSize ?? 1.28}
         smoothing={70}
         active={active}
         onItemClick={(index) => onJump(JOURNEY_NAV[index].progress)}

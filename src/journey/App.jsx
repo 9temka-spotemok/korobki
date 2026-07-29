@@ -25,7 +25,7 @@ export default function App() {
   const { progress, progressRef, scrollToProgress } = useScrollStory(scrollerRef)
   const narrow = useNarrowViewport()
   const [menuOpen, setMenuOpen] = useState(false)
-  const atStart = progress < SECTIONS.evolution.start
+  const atStart = progress < SECTIONS.configurator.start
   const inConfigurator =
     progress >= SECTIONS.configurator.start && progress < SECTIONS.configurator.end
 
@@ -56,10 +56,10 @@ export default function App() {
       <header className={`journey-nav${menuOpen ? ' is-menu-open' : ''}`}>
         <a className="journey-nav__brand" href="journey.html" aria-label="БАЛТКАРТОН — на главную">
           <img
-            src="/brand/logo-horizontal-light.png"
+            src="/brand/logo-horizontal-dark.png"
             alt="БАЛТКАРТОН — производство гофрокартона"
-            width="320"
-            height="72"
+            width="420"
+            height="96"
           />
         </a>
         <button
@@ -106,7 +106,7 @@ export default function App() {
         </nav>
       </header>
 
-      {!inConfigurator && <JourneySectionNav progress={progress} onJump={scrollToProgress} />}
+      <JourneySectionNav progress={progress} onJump={scrollToProgress} />
 
       <div className="journey-canvas" aria-hidden="true">
         <Canvas
@@ -134,14 +134,6 @@ export default function App() {
             <div className="journey-progress" aria-hidden="true">
               <div className="journey-progress__bar" style={{ transform: `scaleX(${progress})` }} />
             </div>
-            <p
-              className="journey-hint"
-              style={{ opacity: progress < 0.05 ? 1 : 0 }}
-              aria-hidden={progress >= 0.05}
-            >
-              <span className="journey-hint__label">Листайте вниз</span>
-              <span className="journey-hint__arrow" aria-hidden="true" />
-            </p>
           </div>
         </div>
       </div>

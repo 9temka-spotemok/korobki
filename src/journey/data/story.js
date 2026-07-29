@@ -2,7 +2,7 @@
 
 export const KRAFT = '#B79477'
 export const KRAFT_DARK = '#8B6B4F'
-export const BG = '#121212'
+export const BG = '#e6dccf'
 export const ACCENT = '#ff5a1f'
 
 /** Size morph order (RSC), then pizza box swap at the end. */
@@ -70,7 +70,7 @@ export const PRINT_MODES = [
   { id: '1', label: '1 цвет', colors: ['#1a1a1d'] },
   { id: '2', label: '2 цвета', colors: ['#1a1a1d', '#ff5a1f'] },
   { id: '3', label: '3 цвета', colors: ['#1a1a1d', '#ff5a1f', '#ffffff'] },
-  { id: 'custom', label: 'Свой макет', colors: ['#1a1a1d', '#ff5a1f'] },
+  { id: 'custom', label: 'Свой макет', colors: ['#1a1a1d', '#ff5a1f', '#ffffff'] },
 ]
 
 export const APPLICATIONS = [
@@ -83,49 +83,59 @@ export const APPLICATIONS = [
   { id: 'food', label: 'Продукты', color: '#e9c46a' },
 ]
 
-export const TRUST_STATS = [
-  { value: '15+', label: 'лет на рынке' },
-  { value: '5000+', label: 'реализованных проектов' },
-  { value: 'Миллионы', label: 'коробов произведено' },
-  { value: 'Быстро', label: 'производство' },
-  { value: 'Любые', label: 'размеры под заказ' },
+/** Trust lines shown on the home screen under the CTA. */
+export const HERO_TRUST = [
+  '15+ лет на рынке',
+  '5000+ реализованных проектов',
+  'Миллионы коробов произведено',
+  'Быстрое производство',
+  'Любые размеры под заказ',
+  'Качественные материалы и современное оборудование',
+  'Доставка по СПб, ЛО и всей России',
 ]
 
-/** Hero intro on Journey start (from landing, without the quality slogan). */
-export const HERO_POINTS = [
-  { id: 'materials', label: 'Качественные материалы', icon: 'seal' },
-  { id: 'equipment', label: 'Современное оборудование', icon: 'box' },
-  { id: 'volume', label: 'Любые объёмы заказа', icon: 'stack' },
-  { id: 'delivery', label: 'Доставка по СПб, ЛО и всей России', icon: 'truck' },
-]
+/** Print section lead (moved from the former home FEFCO line). */
+export const PRINT_LEAD =
+  'Стандартные конструкции FEFCO и индивидуальные размеры. Печать до трёх цветов. Минимальный тираж — по согласованию'
 
-export const HERO_LEAD =
-  'Стандартные конструкции FEFCO и индивидуальные размеры. Печать до трёх цветов. Минимальный тираж — по согласованию.'
-
-/** Section ranges on the master scroll progress. */
+/** Section ranges on the master scroll progress (nav order). */
 export const SECTIONS = {
-  // Start block (hero+fold) shortened ~2× vs previous 0–0.2
-  hero: { start: 0, end: 0.05 },
-  // Camera settle after hero (box already on screen)
-  fold: { start: 0.04, end: 0.1 },
-  // RSC size morph → pizza appears → extra scroll spins the pizza
-  evolution: { start: 0.1, end: 0.38 },
-  printing: { start: 0.38, end: 0.5 },
-  applications: { start: 0.5, end: 0.6 },
-  configurator: { start: 0.6, end: 0.7 },
-  trust: { start: 0.7, end: 0.85 },
+  hero: { start: 0, end: 0.06 },
+  fold: { start: 0.05, end: 0.1 },
+  configurator: { start: 0.1, end: 0.28 },
+  printing: { start: 0.28, end: 0.42 },
+  applications: { start: 0.42, end: 0.54 },
+  evolution: { start: 0.54, end: 0.85 },
   finale: { start: 0.85, end: 1 },
 }
 
 /** Right LineSidebar: `progress` = scroll jump target; `activeFrom` = highlight threshold. */
 export const JOURNEY_NAV = [
-  { id: 'hero', label: 'Старт', progress: 0, activeFrom: SECTIONS.hero.start },
-  { id: 'evolution', label: 'Эволюция', progress: SECTIONS.evolution.start + 0.02, activeFrom: SECTIONS.evolution.start },
-  { id: 'printing', label: 'Печать', progress: SECTIONS.printing.start + 0.02, activeFrom: SECTIONS.printing.start },
-  { id: 'applications', label: 'Применение', progress: SECTIONS.applications.start + 0.02, activeFrom: SECTIONS.applications.start },
-  { id: 'configurator', label: 'Конфигуратор', progress: SECTIONS.configurator.start + 0.02, activeFrom: SECTIONS.configurator.start },
-  { id: 'trust', label: 'Доверие', progress: SECTIONS.trust.start + 0.02, activeFrom: SECTIONS.trust.start },
-  { id: 'finale', label: 'Финал', progress: SECTIONS.finale.start + 0.02, activeFrom: SECTIONS.finale.start },
+  { id: 'hero', label: 'Главная страница', progress: 0, activeFrom: SECTIONS.hero.start },
+  {
+    id: 'configurator',
+    label: 'Конфигуратор',
+    progress: SECTIONS.configurator.start + 0.02,
+    activeFrom: SECTIONS.configurator.start,
+  },
+  {
+    id: 'printing',
+    label: 'Печать',
+    progress: SECTIONS.printing.start + 0.02,
+    activeFrom: SECTIONS.printing.start,
+  },
+  {
+    id: 'applications',
+    label: 'Применение',
+    progress: SECTIONS.applications.start + 0.02,
+    activeFrom: SECTIONS.applications.start,
+  },
+  {
+    id: 'evolution',
+    label: 'Эволюция',
+    progress: SECTIONS.evolution.start + 0.02,
+    activeFrom: SECTIONS.evolution.start,
+  },
 ]
 
 export function journeyNavIndex(progress) {

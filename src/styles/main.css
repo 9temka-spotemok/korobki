@@ -944,6 +944,12 @@ select {
   color: var(--color-orange);
 }
 
+.print-stack__intro .section__eyebrow {
+  font-size: clamp(1.55rem, 3.2vw, 2.35rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .section__title {
   margin: 0 0 1rem;
   font-family: var(--font-display);

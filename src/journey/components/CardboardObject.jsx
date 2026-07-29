@@ -30,8 +30,8 @@ import {
 } from '../materials/kraft'
 import { configState, subscribeConfig } from '../state/configStore'
 
-const DISPLAY_SCALE = 0.78
-const PIZZA_SCALE = 0.7
+const DISPLAY_SCALE = 0.52
+const PIZZA_SCALE = 0.48
 
 /** Narrow / tablet: shrink the object so flaps and UI stay inside the frame. */
 function viewportFit(width, height) {
@@ -53,14 +53,15 @@ export function CardboardObject({ progress }) {
   const pizzaWrap = useRef()
   const glow = useRef()
   const configRef = useRef({ ...configState })
-  const printMeta = useRef({ ink: -1, mode: -1, art: false, board: 'kraft' })
+  const printMeta = useRef({ ink: -1, mode: -1, art: false, board: 'kraft', face: -1, aspect: -1 })
   const bakedMaps = useRef({ logo: null })
   const boardMode = useRef('kraft')
   const artReady = useRef(false)
 
   const sheetMats = useMemo(() => createBoardMaterials(KRAFT_HEX, { size: 256, anisotropy: 8 }), [])
   const boxMats = useMemo(() => createBoardMaterials(KRAFT_HEX, { size: 256, anisotropy: 8 }), [])
-  const whiteMats = useMemo(() => createBoardMaterials('#E8E2D6', { size: 256, anisotropy: 8 }), [])
+  // Cool white liner (not warm cream / yellow)
+  const whiteMats = useMemo(() => createBoardMaterials('#F4F4F2', { size: 256, anisotropy: 8 }), [])
 
   const sheet = useMemo(() => buildCardboardSheet(sheetMats), [sheetMats])
   const rsc = useMemo(() => buildRscBox(boxMats), [boxMats])
@@ -126,7 +127,6 @@ export function CardboardObject({ progress }) {
     const evoP = sectionProgress(p, SECTIONS.evolution.start, SECTIONS.evolution.end)
     const printP = sectionProgress(p, SECTIONS.printing.start, SECTIONS.printing.end)
     const appP = sectionProgress(p, SECTIONS.applications.start, SECTIONS.applications.end)
-    const trustP = sectionProgress(p, SECTIONS.trust.start, SECTIONS.trust.end)
     const finP = sectionProgress(p, SECTIONS.finale.start, SECTIONS.finale.end)
     const hero = sectionProgress(p, SECTIONS.hero.start, SECTIONS.hero.end)
 
@@ -144,9 +144,47 @@ export function CardboardObject({ progress }) {
     let sz = 1
     let wantWhite = false
 
-    if (p >= SECTIONS.evolution.start) {
+    // Same breakpoints as viewportFit / journey compact layout
+    const compactUi =
+      frame.size.width < 1100 ||
+      (frame.size.width <= 1366 && frame.size.height >= frame.size.width * 0.95)
+
+    if (p >= SECTIONS.configurator.start && p < SECTIONS.printing.start) {
+      const cfg = configRef.current
+      const base = RSC_BOX_TYPES[0]
+      sx = cfg.width / base.w
+      sy = cfg.height / base.h
+      sz = cfg.depth / base.d
       tSheet = 0
-      // morph RSC → pizza in → hold + spin on remaining scroll
+      tBox = 1
+      tPizza = 0
+      tOpen = 0.12
+      wantWhite = cfg.board === 'white'
+      const mode = PRINT_MODES.find((m) => m.id === cfg.printing) || PRINT_MODES[1]
+      tInk = 0.9
+      tMode = Math.max(0, PRINT_MODES.indexOf(mode))
+    } else if (p >= SECTIONS.printing.start && p < SECTIONS.applications.start) {
+      tSheet = 0
+      tBox = 1
+      tPizza = 0
+      tInk = 0.95
+      tMode = Math.min(3, Math.floor(printP * 4))
+      sx = 1
+      sy = 1
+      sz = 1
+    } else if (p >= SECTIONS.applications.start && p < SECTIONS.evolution.start) {
+      tOpen = smoothstep(0.05, 0.55, appP)
+      tSheet = 0
+      tBox = 1
+      tPizza = 0
+      tInk = 0.95
+      // Keep 3-color lockup so fold dashes stay white (not black from 2-color mode)
+      tMode = 2
+      sx = 1
+      sy = 1
+      sz = 1
+    } else if (p >= SECTIONS.evolution.start && p < SECTIONS.finale.start) {
+      tSheet = 0
       const rscEvo = smoothstep(0, EVO_PIZZA_GATE, evoP)
       const pizzaIn = smoothstep(EVO_PIZZA_GATE, EVO_PIZZA_SPIN, evoP)
 
@@ -164,73 +202,11 @@ export function CardboardObject({ progress }) {
 
       tPizza = pizzaIn
       tBox = 1 - pizzaIn
-      // Brand lockup on RSC walls and pizza lid throughout evolution
-      tMode = 1
+      tMode = 2
       tInk = 0.92
-    }
-
-    if (p >= SECTIONS.printing.start && p < SECTIONS.applications.start) {
-      tSheet = 0
-      tBox = 1
-      tPizza = 0
-      // Logo visible from the first chip («1 цвет»)
-      tInk = 0.95
-      tMode = Math.min(3, Math.floor(printP * 4))
-      sx = 1
-      sy = 1
-      sz = 1
-    }
-
-    if (p >= SECTIONS.applications.start && p < SECTIONS.configurator.start) {
-      tOpen = smoothstep(0.05, 0.55, appP)
-      tSheet = 0
-      tBox = 1
-      tPizza = 0
-      tInk = 0.55
-      sx = 1
-      sy = 1
-      sz = 1
-    }
-
-    if (p >= SECTIONS.configurator.start && p < SECTIONS.trust.start) {
-      const cfg = configRef.current
-      const base = RSC_BOX_TYPES[0]
-      sx = cfg.width / base.w
-      sy = cfg.height / base.h
-      sz = cfg.depth / base.d
-      tSheet = 0
-      tBox = 1
-      tPizza = 0
-      tOpen = 0.12
-      wantWhite = cfg.board === 'white'
-      const mode = PRINT_MODES.find((m) => m.id === cfg.printing) || PRINT_MODES[1]
-      tInk = 0.9
-      tMode = Math.max(0, PRINT_MODES.indexOf(mode))
-    }
-
-    // Same breakpoints as viewportFit / journey compact layout
-    const compactUi =
-      frame.size.width < 1100 ||
-      (frame.size.width <= 1366 && frame.size.height >= frame.size.width * 0.95)
-
-    if (p >= SECTIONS.trust.start && p < SECTIONS.finale.start) {
-      tSheet = 0
-      tBox = 1
-      tPizza = 0
-      tOpen = 0
-      tClose = 0
-      sx = 0.92
-      sy = 0.88
-      sz = 0.92
-      // Desktop: plain kraft for overlay readability; tablet/phone keep brand mark
-      tMode = 1
-      tInk = compactUi ? 0.9 : 0
-    }
-
-    if (p >= SECTIONS.finale.start) {
+    } else if (p >= SECTIONS.finale.start) {
       tGlow = smoothstep(0.2, 0.8, finP)
       tOpen = 0
-      // Minors then majors fold inward — closed shipping box for the CTA
       tClose = smoothstep(0.08, 0.62, finP)
       tSheet = 0
       tBox = 1
@@ -238,7 +214,7 @@ export function CardboardObject({ progress }) {
       sx = 1.05
       sy = 1.05
       sz = 1.05
-      tMode = 1
+      tMode = 2
       tInk = compactUi ? 0.85 : 0
     }
 
@@ -362,18 +338,31 @@ export function CardboardObject({ progress }) {
     const boardKey = boardMode.current
     const artOk = artReady.current || isPrintArtworkReady()
     const inkQ = Math.round(clamp01(s.printInk) * 24) / 24
+    // Match real RSC panel geometry (L×H)
+    const geoL = rsc.userData.dims.L
+    const geoH = rsc.userData.dims.H
+    const faceAspect = (geoL * Math.max(0.2, s.sx)) / (geoH * Math.max(0.2, s.sy))
+    const faceScale = Math.sqrt(Math.max(0.2, s.sx) * Math.max(0.2, s.sy))
+    const faceQ = Math.round(faceScale * 20) / 20
+    const aspectQ = Math.round(faceAspect * 40) / 40
     const needBake =
       printMeta.current.ink !== inkQ ||
       printMeta.current.mode !== s.printMode ||
       printMeta.current.board !== boardKey ||
+      printMeta.current.face !== faceQ ||
+      printMeta.current.aspect !== aspectQ ||
       (artOk && !printMeta.current.art)
     const canBake = inkQ <= 0.01 || artOk
     if (needBake && canBake) {
       const mode = PRINT_MODES[s.printMode] || PRINT_MODES[1]
-      const boardHex = boardKey === 'white' ? '#E8E2D6' : KRAFT_HEX
+      const boardHex = boardKey === 'white' ? '#F4F4F2' : KRAFT_HEX
       const activeLogo = boardKey === 'white' ? whiteMats.logo : boxMats.logo
-      const nextLogo = createPrintTexture(mode.colors, inkQ, 1024, boardHex, RSC_FACE_ASPECT)
+      const nextLogo = createPrintTexture(mode.colors, inkQ, 1024, boardHex, aspectQ, faceQ)
       activeLogo.map = nextLogo
+      activeLogo.emissiveMap = nextLogo
+      activeLogo.emissive.set('#ffffff')
+      activeLogo.emissiveIntensity = 0.42
+      activeLogo.roughness = 0.62
       activeLogo.needsUpdate = true
       if (bakedMaps.current.logo) bakedMaps.current.logo.dispose()
       bakedMaps.current.logo = nextLogo
@@ -383,6 +372,8 @@ export function CardboardObject({ progress }) {
         mode: s.printMode,
         art: artOk || inkQ <= 0.01,
         board: boardKey,
+        face: faceQ,
+        aspect: aspectQ,
       }
     }
 
@@ -406,7 +397,7 @@ export function CardboardObject({ progress }) {
       )
       root.current.position.y = THREE.MathUtils.damp(
         root.current.position.y,
-        0.08 + trustP * 0.1 + finP * 0.05,
+        0.08 + finP * 0.05,
         4,
         delta,
       )

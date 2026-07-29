@@ -193,40 +193,44 @@ function punchBlackBackground(img) {
   return c
 }
 
+/** Size title + tagline for a given max width (shared by measure + draw). */
+function sizeBrandWordmark(ctx, maxW) {
+  let titleSize = Math.max(8, maxW * 0.125)
+  ctx.font = `800 ${Math.round(titleSize)}px Oswald, Unbounded, sans-serif`
+  const titleW = ctx.measureText(WORDMARK_TITLE).width
+  if (titleW > maxW && titleW > 0) titleSize = Math.max(8, titleSize * (maxW / titleW))
+
+  let tagSize = Math.max(6, titleSize * 0.34)
+  ctx.font = `600 ${Math.round(tagSize)}px Oswald, Manrope, sans-serif`
+  const tagW = ctx.measureText(WORDMARK_TAGLINE).width
+  if (tagW > maxW && tagW > 0) tagSize = Math.max(6, tagSize * (maxW / tagW))
+
+  return { titleSize, tagSize, height: titleSize * 1.28 + tagSize }
+}
+
 /** Title + tagline under the BK cube (no cropped PNG — avoids truncated letters). */
 function drawBrandWordmark(ctx, colors, cx, y, maxW, alpha) {
   const ink = colors[0] || MARK_INK
   const accent = colors[1] || ink
   const mono = colors.length <= 1
+  const { titleSize, tagSize, height } = sizeBrandWordmark(ctx, maxW)
 
   ctx.save()
   ctx.globalAlpha = alpha
   ctx.textAlign = 'center'
   ctx.textBaseline = 'top'
 
-  let titleSize = maxW * 0.125
   ctx.font = `800 ${Math.round(titleSize)}px Oswald, Unbounded, sans-serif`
-  const titleW = ctx.measureText(WORDMARK_TITLE).width
-  if (titleW > maxW) {
-    titleSize *= maxW / titleW
-    ctx.font = `800 ${Math.round(titleSize)}px Oswald, Unbounded, sans-serif`
-  }
   ctx.fillStyle = mono ? ink : accent
   ctx.fillText(WORDMARK_TITLE, cx, y)
 
-  let tagSize = titleSize * 0.34
   ctx.font = `600 ${Math.round(tagSize)}px Oswald, Manrope, sans-serif`
-  let tagW = ctx.measureText(WORDMARK_TAGLINE).width
-  if (tagW > maxW) {
-    tagSize *= maxW / tagW
-    ctx.font = `600 ${Math.round(tagSize)}px Oswald, Manrope, sans-serif`
-  }
   ctx.fillStyle = ink
   ctx.globalAlpha = alpha * (mono ? 1 : 0.9)
   ctx.fillText(WORDMARK_TAGLINE, cx, y + titleSize * 1.28)
   ctx.restore()
 
-  return titleSize * 1.28 + tagSize
+  return height
 }
 
 function makeCanvasTexture(canvas) {
@@ -279,15 +283,20 @@ export const RSC_FACE_ASPECT = 1.62 / 0.98
 /**
  * Front-face map for RSC `mats.logo`: kraft + layered Baltkarton lockup.
  */
+/**
+ * @param faceScale geometric scale of the printed face vs base RSC (keeps logo size stable when the box grows)
+ */
 export function createPrintTexture(
-  colors = ['#1a1a1d', '#ff5a1f'],
+  colors = ['#1a1a1d', '#ff5a1f', '#ffffff'],
   ink = 1,
   size = 1024,
   boardHex = KRAFT_BOARD,
   aspect = RSC_FACE_ASPECT,
+  faceScale = 1,
 ) {
+  const safeAspect = Math.min(4.2, Math.max(0.9, Number.isFinite(aspect) ? aspect : RSC_FACE_ASPECT))
   const width = size
-  const height = Math.max(1, Math.round(size / aspect))
+  const height = Math.max(160, Math.round(size / safeAspect))
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
@@ -305,29 +314,60 @@ export function createPrintTexture(
     throw new Error('Арт печати ещё не загружен (ensurePrintArtwork)')
   }
 
-  const mark = composeMarkCube(colors)
-  const markRatio = mark.width / mark.height
-  let markH = height * 0.38
+  // Brand orange (#ff5a1f) like header logo
+  const brandColors =
+    colors.length >= 3
+      ? ['#1a1a1d', '#ff5a1f', colors[2]]
+      : colors.length >= 2
+        ? ['#1a1a1d', '#ff5a1f']
+        : ['#ff5a1f']
+
+  const mark = composeMarkCube(brandColors)
+  const markRatio = mark.width / Math.max(1, mark.height)
+  const pad = height * 0.07
+  const maxBlockH = height - pad * 2
+
+  // Start from a readable lockup, then shrink until cube + wordmark fit the face
+  let markH = Math.min(height * 0.42, width * 0.28)
   let markW = markH * markRatio
-  if (markW > width * 0.52) {
-    markW = width * 0.52
+  if (markW > width * 0.62) {
+    markW = width * 0.62
     markH = markW / markRatio
   }
+  let wordMaxW = width * 0.86
+  let gap = height * 0.03
+  let wordH = sizeBrandWordmark(ctx, wordMaxW).height
+  let blockH = markH + gap + wordH
 
-  const wordMaxW = width * 0.78
-  const wordBlockH = height * 0.16
-  const gap = height * 0.035
-  const blockH = markH + gap + wordBlockH
-  const blockY = (height - blockH) / 2
+  if (blockH > maxBlockH) {
+    const fit = maxBlockH / blockH
+    markH = Math.max(24, markH * fit)
+    markW = markH * markRatio
+    gap = Math.max(3, gap * fit)
+    wordMaxW = Math.max(64, wordMaxW * fit)
+    wordH = sizeBrandWordmark(ctx, wordMaxW).height
+    blockH = markH + gap + wordH
+  }
+  // Extra shrink for very short faces (mailer) if wordmark still overflows
+  if (blockH > maxBlockH) {
+    const fit = maxBlockH / blockH
+    markH = Math.max(20, markH * fit)
+    markW = markH * markRatio
+    gap = Math.max(2, gap * fit)
+    wordMaxW = Math.max(48, wordMaxW * fit)
+    wordH = sizeBrandWordmark(ctx, wordMaxW).height
+    blockH = markH + gap + wordH
+  }
+
   const markX = (width - markW) / 2
-  const markY = blockY
+  const markY = (height - blockH) / 2
 
   ctx.save()
   ctx.globalAlpha = alpha
   ctx.drawImage(mark, markX, markY, markW, markH)
   ctx.restore()
 
-  drawBrandWordmark(ctx, colors, width / 2, markY + markH + gap, wordMaxW, alpha)
+  drawBrandWordmark(ctx, brandColors, width / 2, markY + markH + gap, wordMaxW, alpha)
 
   return makeCanvasTexture(canvas)
 }

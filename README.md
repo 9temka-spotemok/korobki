@@ -52,12 +52,12 @@ npm run preview
 | `src/journey/main.jsx` | Точка входа React для `journey.html` |
 | `src/journey/App.jsx` | Оболочка Journey: Canvas, Lenis, оверлеи; бургер-меню шапки на планшете/мобилке; `journey--start` / `journey--config` |
 | `src/journey/hooks/useScrollStory.js` | Lenis + GSAP ScrollTrigger → master progress 0–1; `scrollToProgress` для прыжков по меню |
-| `src/journey/data/story.js` | Таймлайн секций, `HERO_POINTS` / `HERO_LEAD`, `JOURNEY_NAV`, `BOX_TYPES` (+ `desc` на эволюции), trust-статы |
+| `src/journey/data/story.js` | Таймлайн секций, `HERO_TRUST` / `PRINT_LEAD`, `JOURNEY_NAV`, `BOX_TYPES` (+ `desc` на эволюции) |
 | `src/journey/components/LineSidebar.jsx` + `LineSidebar.css` | React Bits LineSidebar: vertical right rail + `orientation="horizontal"` (верхняя полоса) |
 | `src/journey/components/JourneySectionNav.jsx` | Обёртка этапов: десктоп — справа; на планшете/телефоне — горизонтально под брендом «БАЛТКАРТОН» (`--tablet` / `--phone`) |
 | `src/journey/state/configStore.js` | Состояние 3D-конфигуратора: длина/ширина/высота мм (`SIZE_BOUNDS` 400–800 / 300–600 / 240–600), картон, печать, тираж |
 | `src/journey/materials/kraft.js` | Текстура бурого картона как в конструкторе (`#B79477` + soft fiber); гофра только на торце; флексо: `ensurePrintArtwork` / `createPrintTexture` (логотип) |
-| `src/journey/components/Scene.jsx` | R3F-сцена: `StudioAtmosphere` (тёплый kraft-задник + мягкий пол), свет, Environment, ContactShadows, пыль, камера |
+| `src/journey/components/Scene.jsx` | R3F-сцена: ровный kraft-фон без «комнаты», плоский пол под тень, свет, Environment, ContactShadows, камера |
 | `src/journey/components/CorrugatedSheet.jsx` | (legacy) старый hero-лист; Journey использует `cardboard-kit` |
 | `src/journey/components/CardboardObject.jsx` | Scroll: RSC с первого экрана → морф → пицца; на Printing — логотип спереди и транспортные знаки сбоку; финал — закрытие → `closedTop` |
 | `src/journey/components/Overlays.jsx` | Типографика секций; hero CTA; на каждом типе эволюции — «Оставить заявку»; печать/применение/финал |
@@ -91,15 +91,15 @@ npm run preview
 
 ## Journey (cinematic landing)
 
-Стартовый лендинг `/journey.html` (также `/` и `/index.html` → редирект сюда) — scroll-storytelling вокруг **готовой RSC-коробки** с первого экрана: морф между типами упаковки, производство, печать, приложения, конфигуратор, trust и финальный CTA. `LineSidebar` (`JourneySectionNav`): на десктопе справа вертикально (`line-sidebar--right`); на планшете/телефоне — та же шкала этапов горизонтально сверху под шапкой (скролл по X при нехватке места), клик прыгает по progress через Lenis. На планшетах (`viewportFit` / CameraRig: ширина <1100 или portrait ≤1366) короб уменьшен (~0.68), камера дальше, тексты этапов снизу, типографика крупнее. На узких экранах (`≤960px`): компактная шапка, тексты снизу, конфигуратор с внутренним скроллом, `journey--narrow`.
+Стартовый лендинг `/journey.html` (также `/` и `/index.html` → редирект сюда) — scroll-storytelling вокруг **готовой RSC-коробки** на тёплом kraft-фоне: конфигуратор → печать → применение → эволюция типов → финальный CTA. `LineSidebar` (`JourneySectionNav`): пункты **Главная страница / Конфигуратор / Печать / Применение / Эволюция** (без цифр и без шкалы — у каждого слова одна черточка); на десктопе справа вертикально; на планшете/телефоне — горизонтально под шапкой. На узких экранах (`≤960px`): компактная шапка, тексты снизу, конфигуратор с внутренним скроллом, `journey--narrow`.
 
 Стек: React 19, React Three Fiber, Drei, postprocessing (Bloom / DoF / Vignette), GSAP ScrollTrigger, Lenis. Основной сайт остаётся multi-page Vite (без Next.js), чтобы не ломать текущие HTML-страницы.
 
-Секции по `src/journey/data/story.js` (`SECTIONS`): Hero+Fold (старт, progress 0–0.1, укорочен в ~2 раза) → Box evolution → Printing → Applications → Configurator → Trust → Finale. На старте: бренд сверху; слоган + лид + CTA одним паком по центру поверх 3D-коробки (`journey-stage--hero-cta`); блок качества/доставки (`HERO_POINTS` / `HERO_LEAD`) снизу слева.
+Секции по `src/journey/data/story.js` (`SECTIONS`): Hero+Fold → Configurator → Printing → Applications → Evolution → Finale. На старте: крупный логотип слева (`logo-horizontal-dark.png`); слоган + CTA выше центра; под CTA — `HERO_TRUST`. FEFCO/тираж — в разделе печати (`PRINT_LEAD`). «Применение» — статичный список отраслей (`APPLICATIONS`), без перелистывания. Подзаголовки секций и нижний hint — «Листайте вниз» (до финала). Правый `JourneySectionNav` остаётся и в конфигураторе. Печать на коробе: бренд-оранжевый `#ff5a1f`, размер логотипа стабилен при росте габаритов (`faceScale` в `createPrintTexture`); белый картон — `#F4F4F2`.
 
-3D в Journey (`cardboard-kit.js`): готовый RSC с первого экрана → морф размеров → пицца-бокс. RSC — простые `BoxGeometry`-панели (как в конструкторе): один kraft `plain` на стенках и клапанах, без ExtrudeGeometry/капов/knuckle (они давали смазанные UV и щели).
+3D в Journey (`cardboard-kit.js`): уменьшенный RSC с первого экрана → морф размеров → пицца-бокс. RSC — простые `BoxGeometry`-панели (как в конструкторе): один kraft `plain` на стенках и клапанах.
 
-На секциях **Evolution** (RSC-морф и пицца) и **Printing** на `mats.logo` собирается логотип из слоёв `public/brand/mark-layers/` (Б / К / крышка / пунктир) + текст «БАЛТКАРТОН» / «ПРОИЗВОДСТВО ГОФРОКАРТОНА». В эволюции — режим «2 цвета» на RSC и на крышке пиццы. На **Printing / 3 цвета** пунктир сгиба — белый (`#ffffff`). На **Доверие** и **Финал**: на десктопе печать снимается (`tInk = 0`) ради читаемости оверлеев; на планшете/мобилке логотип остаётся.
+На секциях **Evolution** и **Printing** на `mats.logo` собирается логотип из слоёв `public/brand/mark-layers/` + текст «БАЛТКАРТОН» / «ПРОИЗВОДСТВО ГОФРОКАРТОНА». На **Финал**: на десктопе печать снимается (`tInk = 0`) ради читаемости оверлеев; на планшете/мобилке логотип остаётся.
 
 ## Бренд
 
